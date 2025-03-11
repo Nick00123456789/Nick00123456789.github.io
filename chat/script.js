@@ -1,6 +1,6 @@
 // Supabase Config
-const SUPABASE_URL = "https://your-project.supabase.co";  // Replace with your Supabase URL
-const SUPABASE_ANON_KEY = "your-anon-key";  // Replace with your Supabase Anon Key
+const SUPABASE_URL = "https://kigbtbacxkfeevmyvioa.supabase.co";  // Replace with your Supabase URL
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZ2J0YmFjeGtmZWV2bXl2aW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTgyNzQsImV4cCI6MjA1NzI5NDI3NH0.OqMLrZ2NzZ6CMNaZcKKHBA7V1PTQfy7g5MKv8XT1-N4";  // Replace with your Supabase Anon Key
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const chatBox = document.getElementById("chat-box");
