@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Room</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Chat Room</h1>
+
+    <!-- Public Chat Section -->
+    <div id="public-chat">
+      <h2>Public Chat</h2>
+      <div id="public-messages" class="messages"></div>
+      <div class="input-container">
+        <input type="text" id="public-message-input" placeholder="Type a public message...">
+        <button id="send-public-btn">Send</button>
+      </div>
+    </div>
+
+    <!-- Private DM Section -->
+    <div id="dm-chat">
+      <h2>Private Chat</h2>
+      <input type="text" id="search-user" placeholder="Search for a user..." oninput="searchUser()">
+      <div id="user-list"></div>
+      <div id="dm-messages" class="messages"></div>
+      <div class="input-container">
+        <input type="text" id="dm-message-input" placeholder="Type a message to a user...">
+        <button id="send-dm-btn">Send DM</button>
+      </div>
+    </div>
+
+    <!-- File Upload Form -->
+    <form id="file-upload-form" enctype="multipart/form-data">
+      <input type="file" id="media" required>
+      <button type="submit">Upload</button>
+    </form>
+
+    <!-- Logout -->
+    <a href="/logout" class="logout-btn">Logout</a>
+  </div>
+</body>
+</html>
