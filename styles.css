@@ -38,30 +38,31 @@ main {
 
 .auth-wrapper h1 {
     color: #00aaff;
-    font-size: 1.75rem;
+    font-size: 2rem; /* Slightly larger for prominence */
     margin-bottom: 1.5rem;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; /* Adjusted for better spacing */
+    gap: 1rem; /* Increased gap for better separation */
 }
 
 .input-group label {
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 1rem; /* Larger labels for readability */
     color: #a0a0a0;
 }
 
 .auth-wrapper input {
     width: 100%;
-    padding: 0.75rem;
-    background: #2a2a2a;
+    padding: 1rem; /* Larger padding for bigger inputs */
+    background: #2a2a2a; /* Dark background */
     border: 1px solid #404040;
     border-radius: 6px;
-    color: #ffffff;
-    font-size: 1rem;
+    color: #ffffff; /* White text */
+    font-size: 1.25rem; /* Larger font size for desktop */
+    line-height: 1.5; /* Better readability */
 }
 
 .auth-wrapper input:focus {
@@ -77,12 +78,12 @@ main {
 }
 
 button {
-    padding: 0.625rem 1.25rem;
+    padding: 0.75rem 1.5rem; /* Slightly larger buttons */
     background: #00aaff;
     border: none;
     border-radius: 6px;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.1rem; /* Larger button text */
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
@@ -112,7 +113,7 @@ header {
 
 header h1 {
     color: #00aaff;
-    font-size: 1.5rem;
+    font-size: 1.75rem; /* Larger chat title */
 }
 
 .chat-controls {
@@ -164,12 +165,12 @@ header h1 {
 
 #chat-input {
     flex: 1;
-    padding: 0.75rem;
+    padding: 1rem; /* Larger padding */
     background: #2a2a2a;
     border: 1px solid #404040;
     border-radius: 6px;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.25rem; /* Larger font size */
 }
 
 #chat-input:focus {
@@ -178,7 +179,7 @@ header h1 {
 }
 
 #message-form button {
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 1.5rem;
 }
 
 /* Mobile Adjustments */
@@ -191,13 +192,19 @@ header h1 {
     }
     .auth-wrapper h1,
     header h1 {
-        font-size: 1.5rem;
+        font-size: 1.5rem; /* Smaller on mobile */
+    }
+    .input-group label {
+        font-size: 0.875rem; /* Slightly smaller labels */
     }
     .auth-wrapper input,
-    #chat-input,
+    #chat-input {
+        padding: 0.75rem; /* Slightly smaller padding */
+        font-size: 1rem; /* Standard size for mobile */
+    }
     button {
-        font-size: 0.9375rem;
-        padding: 0.625rem;
+        padding: 0.625rem 1.25rem;
+        font-size: 1rem; /* Standard button size */
     }
     .chat-wrapper {
         height: 90vh;
