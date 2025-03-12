@@ -1,7 +1,7 @@
-// Ensure Supabase loads before running code
+// Wait for DOM and Supabase to load
 document.addEventListener("DOMContentLoaded", function() {
     // Initialize Supabase Client
-    const supabaseUrl = 'https://kigbtbacxkfeevmyvioa.supabase.coL'; // Replace with your Supabase Project URL
+    const supabaseUrl = 'https://kigbtbacxkfeevmyvioa.supabase.co'; // Replace with your Supabase Project URL
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZ2J0YmFjeGtmZWV2bXl2aW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTgyNzQsImV4cCI6MjA1NzI5NDI3NH0.OqMLrZ2NzZ6CMNaZcKKHBA7V1PTQfy7g5MKv8XT1-N4'; // Replace with your Supabase Anon Key
     const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const statusP = document.getElementById("status");
     const messageForm = document.getElementById("message-form");
 
-    // Utility to show status messages
+    // Show status messages
     function showStatus(message, isSuccess = false) {
         statusP.textContent = message;
         statusP.style.color = isSuccess ? "#00ff00" : "#ff4444";
@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function() {
         loadMessages();
     }
 
-    // Expose functions globally for onclick
+    // Expose functions globally
     window.handleRegister = handleRegister;
     window.handleLogin = handleLogin;
     window.handleSendMessage = handleSendMessage;
