@@ -1,8 +1,15 @@
 // Wait for DOM and Supabase to load
 document.addEventListener("DOMContentLoaded", function() {
+    // Check if Supabase is loaded
+    if (typeof Supabase === "undefined") {
+        console.error("Supabase library failed to load.");
+        document.getElementById("status").textContent = "Error: Supabase not available. Check console.";
+        return;
+    }
+
     // Initialize Supabase Client
-    const supabaseUrl = 'https://kigbtbacxkfeevmyvioa.supabase.co'; // Replace with your Supabase Project URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZ2J0YmFjeGtmZWV2bXl2aW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTgyNzQsImV4cCI6MjA1NzI5NDI3NH0.OqMLrZ2NzZ6CMNaZcKKHBA7V1PTQfy7g5MKv8XT1-N4'; // Replace with your Supabase Anon Key
+    const supabaseUrl = 'https://cwwjxeolppxftmiyfxjw.supabase.co'; // Replace with your Supabase Project URL
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3d2p4ZW9scHB4ZnRtaXlmeGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3OTkyMzIsImV4cCI6MjA1NzM3NTIzMn0.SxY84BSFT1uezMtXtbiEBF_Mrvm_HKT8rvwGMrvXZmc'; // Replace with your Supabase Anon Key
     const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
 
     // DOM Elements
