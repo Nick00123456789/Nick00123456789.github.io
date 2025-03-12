@@ -1,22 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Sphere</title>
     <link rel="stylesheet" href="./styles.css">
-
-    <!-- Make sure the Supabase script is loaded first -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
-
-
-    "></script>
+    <!-- Supabase UMD Build -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
-
 <body>
     <main>
-        <!-- Auth Panel -->
         <section id="auth" class="panel">
             <div class="auth-wrapper">
                 <h1>Welcome</h1>
@@ -34,7 +27,6 @@
             </div>
         </section>
 
-        <!-- Chat Panel -->
         <section id="chat" class="panel hidden">
             <div class="chat-wrapper">
                 <header>
@@ -52,9 +44,6 @@
             </div>
         </section>
     </main>
-
-    <!-- Your custom script should be loaded after the Supabase script -->
     <script src="./script.js"></script>
 </body>
-
 </html>
