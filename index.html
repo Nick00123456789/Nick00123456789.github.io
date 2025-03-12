@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Sphere</title>
+    <link rel="stylesheet" href="./styles.css">
+
+    <!-- Make sure the Supabase script is loaded first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+
+
+    "></script>
+</head>
+
+<body>
+    <main>
+        <!-- Auth Panel -->
+        <section id="auth" class="panel">
+            <div class="auth-wrapper">
+                <h1>Welcome</h1>
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <div class="auth-actions">
+                    <button onclick="handleRegister()">Register</button>
+                    <button onclick="handleLogin()">Login</button>
+                </div>
+                <p id="status"></p>
+            </div>
+        </section>
+
+        <!-- Chat Panel -->
+        <section id="chat" class="panel hidden">
+            <div class="chat-wrapper">
+                <header>
+                    <h1>Chat Sphere</h1>
+                    <div class="chat-controls">
+                        <button onclick="clearChat()">Clear</button>
+                        <button class="exit" onclick="handleLogout()">Logout</button>
+                    </div>
+                </header>
+                <div id="messages"></div>
+                <form id="message-form" onsubmit="handleSendMessage(event)">
+                    <input type="text" id="chat-input" placeholder="Say something..." required>
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Your custom script should be loaded after the Supabase script -->
+    <script src="./script.js"></script>
+</body>
+
+</html>
