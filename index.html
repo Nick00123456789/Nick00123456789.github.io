@@ -9,11 +9,13 @@
 <body>
     <main>
         <section id="auth" class="panel">
-            <div class="auth-wrapper">
+            <div class="auth-content">
                 <h1>Chat Sphere</h1>
-                <input type="text" id="username" placeholder="Enter username" required>
-                <input type="password" id="password" placeholder="Enter password" required>
-                <div class="auth-actions">
+                <div class="input-group">
+                    <input type="text" id="username" placeholder="Username" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="auth-buttons">
                     <button onclick="handleRegister()">Register</button>
                     <button onclick="handleLogin()">Login</button>
                 </div>
@@ -22,7 +24,7 @@
         </section>
 
         <section id="chat" class="panel hidden">
-            <div class="chat-wrapper">
+            <div class="chat-content">
                 <header>
                     <h1>Chat Room</h1>
                     <div class="chat-controls">
@@ -32,7 +34,7 @@
                 </header>
                 <div id="messages"></div>
                 <form id="message-form" onsubmit="handleSendMessage(event)">
-                    <input type="text" id="chat-input" placeholder="Say something..." required>
+                    <input type="text" id="chat-input" placeholder="Type a message..." required>
                     <button type="submit">Send</button>
                 </form>
             </div>

@@ -6,25 +6,24 @@
 
 body {
     font-family: "Roboto", Arial, sans-serif;
-    background: #0f0f0f; /* Pure black background */
-    color: #d0d0d0; /* Light gray text for contrast */
+    background: #0f0f0f; /* Black background */
+    color: #d0d0d0; /* Light gray text */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 1rem; /* Use rem for consistent scaling */
-    -webkit-font-smoothing: antialiased; /* Improve text rendering */
-    -moz-osx-font-smoothing: grayscale; /* Firefox-specific smoothing */
+    padding: 1rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 main {
     width: 100%;
-    max-width: 480px;
+    max-width: 500px; /* Slightly wider for balance */
 }
 
-/* Ensure panels scale properly */
 .panel {
-    background: #1c1c1c; /* Dark gray for panel */
+    background: #1c1c1c; /* Dark gray panel */
     border-radius: 12px;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
     padding: 1.5rem;
@@ -35,98 +34,112 @@ main {
 }
 
 /* Auth Panel */
-.auth-wrapper h1 {
-    color: #00aaff; /* Bright blue for headings */
-    font-size: 1.75rem;
-    margin-bottom: 1.25rem;
+.auth-content {
+    text-align: center;
 }
 
-.auth-wrapper input {
-    display: block;
-    width: 100%;
-    padding: 0.75rem;
-    margin: 0.625rem 0;
-    background: #2a2a2a; /* Slightly lighter gray for input */
-    border: 1px solid #404040; /* Defined border color */
-    border-radius: 6px;
-    color: #ffffff; /* Explicit white for text */
-    font-size: 1rem;
+.auth-content h1 {
+    color: #00aaff; /* Blue title */
+    font-size: 2rem; /* Larger for prominence */
+    margin-bottom: 1.5rem;
 }
 
-.auth-actions {
+.input-group {
     display: flex;
-    gap: 0.9375rem; /* Consistent spacing */
+    flex-direction: column;
+    gap: 0.75rem; /* Space between inputs */
+    margin-bottom: 1.5rem;
+}
+
+.auth-content input {
+    width: 100%;
+    padding: 0.875rem;
+    background: #2a2a2a; /* Dark input background */
+    border: 1px solid #404040;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none; /* Remove default focus outline */
+}
+
+.auth-content input:focus {
+    border-color: #00aaff; /* Blue border on focus */
+    box-shadow: 0 0 5px rgba(0, 170, 255, 0.5); /* Subtle glow */
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
     justify-content: center;
-    margin: 1.25rem 0;
+    margin-bottom: 1rem;
 }
 
 button {
-    padding: 0.625rem 1.25rem;
+    padding: 0.75rem 1.5rem;
     background: #00aaff; /* Blue button */
     border: none;
-    border-radius: 6px;
-    color: #ffffff; /* Explicit white */
+    border-radius: 8px;
+    color: #ffffff;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.2s ease; /* Explicit property for Firefox */
-    -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
+    transition: background-color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 button:hover {
-    background: #0088cc; /* Darker blue on hover */
+    background: #0088cc; /* Darker blue */
 }
 
 #status {
-    text-align: center;
     font-size: 0.875rem;
-    margin-top: 0.625rem;
+    color: #ff4444; /* Red for errors */
 }
 
 /* Chat Panel */
-.chat-wrapper {
+.chat-content {
     display: flex;
     flex-direction: column;
-    height: 85vh; /* Slightly taller for mobile */
-    max-height: 100vh; /* Prevent overflow */
+    height: 85vh;
+    max-height: 100vh;
 }
 
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 header h1 {
-    color: #00aaff; /* Blue heading */
-    font-size: 1.5rem;
+    color: #00aaff;
+    font-size: 1.75rem;
 }
 
 .chat-controls {
     display: flex;
-    gap: 0.625rem;
+    gap: 0.75rem;
 }
 
 .chat-controls button {
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem;
 }
 
 .exit {
-    background: #ff5555; /* Red for logout */
+    background: #ff5555; /* Red logout */
 }
 
 .exit:hover {
-    background: #dd3333; /* Darker red */
+    background: #dd3333;
 }
 
 #messages {
     flex: 1;
-    background: #2a2a2a; /* Consistent dark gray */
+    background: #2a2a2a;
     border-radius: 8px;
-    padding: 0.9375rem;
+    padding: 1rem;
     overflow-y: auto;
-    margin-bottom: 1.25rem;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+    margin-bottom: 1.5rem;
+    -webkit-overflow-scrolling: touch;
 }
 
 .message {
@@ -135,36 +148,42 @@ header h1 {
 }
 
 .user {
-    color: #00aaff; /* Blue username */
+    color: #00aaff;
     font-weight: 600;
 }
 
 .time {
-    color: #666666; /* Gray timestamp */
+    color: #666666;
     font-size: 0.75rem;
-    margin-left: 0.3125rem;
+    margin-left: 0.5rem;
 }
 
 #message-form {
     display: flex;
-    gap: 0.625rem;
+    gap: 0.75rem;
 }
 
 #chat-input {
     flex: 1;
-    padding: 0.75rem;
-    background: #2a2a2a; /* Match input color */
+    padding: 0.875rem;
+    background: #2a2a2a;
     border: 1px solid #404040;
-    border-radius: 6px;
-    color: #ffffff; /* White text */
+    border-radius: 8px;
+    color: #ffffff;
     font-size: 1rem;
+    outline: none;
+}
+
+#chat-input:focus {
+    border-color: #00aaff;
+    box-shadow: 0 0 5px rgba(0, 170, 255, 0.5);
 }
 
 #message-form button {
-    padding: 0.75rem 1.25rem;
+    padding: 0.875rem 1.5rem;
 }
 
-/* Media Queries for Mobile */
+/* Mobile Adjustments */
 @media (max-width: 480px) {
     body {
         padding: 0.5rem;
@@ -174,19 +193,19 @@ header h1 {
         padding: 1rem;
     }
 
-    .auth-wrapper h1,
+    .auth-content h1,
     header h1 {
         font-size: 1.5rem;
     }
 
     button,
-    .auth-wrapper input,
+    .auth-content input,
     #chat-input {
+        padding: 0.75rem;
         font-size: 0.9375rem;
-        padding: 0.625rem;
     }
 
-    .chat-wrapper {
-        height: 90vh; /* Maximize space on small screens */
+    .chat-content {
+        height: 90vh;
     }
 }
