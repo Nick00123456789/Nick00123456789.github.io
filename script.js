@@ -1,23 +1,21 @@
+// Initialize Supabase Client
+const supabaseUrl = 'https://kigbtbacxkfeevmyvioa.supabase.co'; // Replace with your Project URL
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZ2J0YmFjeGtmZWV2bXl2aW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTgyNzQsImV4cCI6MjA1NzI5NDI3NH0.OqMLrZ2NzZ6CMNaZcKKHBA7V1PTQfy7g5MKv8XT1-N4'; // Replace with your Anon Key
+const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
+
+// DOM Elements
 const authPanel = document.getElementById("auth");
 const chatPanel = document.getElementById("chat");
 const messagesDiv = document.getElementById("messages");
 const statusP = document.getElementById("status");
 const messageForm = document.getElementById("message-form");
 
-const users = JSON.parse(localStorage.getItem("chatSphereUsers")) || {};
-const messages = JSON.parse(localStorage.getItem("chatSphereMessages")) || [];
-
-function saveData() {
-    localStorage.setItem("chatSphereUsers", JSON.stringify(users));
-    localStorage.setItem("chatSphereMessages", JSON.stringify(messages));
-}
-
 function showStatus(message, isSuccess = false) {
     statusP.textContent = message;
     statusP.style.color = isSuccess ? "#00ff00" : "#ff4444";
 }
 
-function handleRegister() {
+async function handleRegister() {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
@@ -26,17 +24,33 @@ function handleRegister() {
         return;
     }
 
-    if (users[username]) {
+    const { data, error } = await supabase
+        .from("users")
+        .select("username")
+        .eq("username", username);
+
+    if (error) {
+        showStatus("Error checking username: " + error.message);
+        return;
+    }
+
+    if (data.length > 0) {
         showStatus("Username already taken.");
         return;
     }
 
-    users[username] = { password };
-    saveData();
-    showStatus("Registered! Please log in.", true);
+    const { error: insertError } = await supabase
+        .from("users")
+        .insert([{ username, password }]);
+
+    if (insertError) {
+        showStatus("Error registering: " + insertError.message);
+    } else {
+        showStatus("Registered! Please log in.", true);
+    }
 }
 
-function handleLogin() {
+async function handleLogin() {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
@@ -45,7 +59,13 @@ function handleLogin() {
         return;
     }
 
-    if (!users[username] || users[username].password !== password) {
+    const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", username)
+        .single();
+
+    if (error || !data || data.password !== password) {
         showStatus("Invalid username or password.");
         return;
     }
@@ -53,21 +73,25 @@ function handleLogin() {
     sessionStorage.setItem("chatSphereUser", username);
     authPanel.classList.add("hidden");
     chatPanel.classList.remove("hidden");
-    renderMessages();
+    loadMessages();
 }
 
-function handleSendMessage(event) {
+async function handleSendMessage(event) {
     event.preventDefault();
     const username = sessionStorage.getItem("chatSphereUser");
     const message = document.getElementById("chat-input").value.trim();
 
     if (!message || !username) return;
 
-    const newMessage = { username, message, timestamp: Date.now() };
-    messages.push(newMessage);
-    saveData();
-    appendMessage(newMessage);
-    document.getElementById("chat-input").value = "";
+    const { error } = await supabase
+        .from("messages")
+        .insert([{ username, message, timestamp: Date.now() }]);
+
+    if (error) {
+        showStatus("Error sending message: " + error.message);
+    } else {
+        document.getElementById("chat-input").value = "";
+    }
 }
 
 function appendMessage({ username, message, timestamp }) {
@@ -79,15 +103,40 @@ function appendMessage({ username, message, timestamp }) {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-function renderMessages() {
+function loadMessages() {
     messagesDiv.innerHTML = "";
-    messages.forEach(appendMessage);
+    supabase
+        .from("messages")
+        .select("*")
+        .order("timestamp", { ascending: true })
+        .then(({ data, error }) => {
+            if (error) {
+                showStatus("Error loading messages: " + error.message);
+            } else {
+                data.forEach(appendMessage);
+            }
+        });
+
+    // Real-time subscription
+    supabase
+        .channel("public:messages")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+            appendMessage(payload.new);
+        })
+        .subscribe();
 }
 
-function clearChat() {
-    messages.length = 0;
-    saveData();
-    renderMessages();
+async function clearChat() {
+    const { error } = await supabase
+        .from("messages")
+        .delete()
+        .gte("id", 0); // Delete all messages
+
+    if (error) {
+        showStatus("Error clearing chat: " + error.message);
+    } else {
+        messagesDiv.innerHTML = "";
+    }
 }
 
 function handleLogout() {
@@ -95,10 +144,12 @@ function handleLogout() {
     authPanel.classList.remove("hidden");
     chatPanel.classList.add("hidden");
     statusP.textContent = "";
+    supabase.channel("public:messages").unsubscribe();
 }
 
+// Check if already logged in
 if (sessionStorage.getItem("chatSphereUser")) {
     authPanel.classList.add("hidden");
     chatPanel.classList.remove("hidden");
-    renderMessages();
+    loadMessages();
 }
