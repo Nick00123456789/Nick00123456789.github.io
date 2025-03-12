@@ -1,32 +1,22 @@
-// Wait for DOM and Supabase to load
+// Initialize Parse with Back4App credentials
+Parse.initialize("ghA7Q0akZW8vJPeNE8mTyrqkxXTGmfAiDQQ4qMhu", "QodnHUHSxdzOje3AbwuDyCUSPKIJLq4KX4GXvUZu"); // Replace with your Back4App keys
+Parse.serverURL = "https://parseapi.back4app.com/";
+
 document.addEventListener("DOMContentLoaded", function() {
-    // Check if Supabase is loaded
-    if (typeof Supabase === "undefined") {
-        console.error("Supabase library failed to load.");
-        document.getElementById("status").textContent = "Error: Supabase not available. Check console.";
-        return;
-    }
-
-    // Initialize Supabase Client
-    const supabaseUrl = 'https://cwwjxeolppxftmiyfxjw.supabase.co'; // Replace with your Supabase Project URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3d2p4ZW9scHB4ZnRtaXlmeGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3OTkyMzIsImV4cCI6MjA1NzM3NTIzMn0.SxY84BSFT1uezMtXtbiEBF_Mrvm_HKT8rvwGMrvXZmc'; // Replace with your Supabase Anon Key
-    const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
-
     // DOM Elements
     const authPanel = document.getElementById("auth");
     const chatPanel = document.getElementById("chat");
     const messagesDiv = document.getElementById("messages");
-    const statusP = document.getElementById("status");
-    const messageForm = document.getElementById("message-form");
+    const status = document.getElementById("status");
 
-    // Show status messages
-    function showStatus(message, isSuccess = false) {
-        statusP.textContent = message;
-        statusP.style.color = isSuccess ? "#00ff00" : "#ff4444";
+    // Status message function
+    function showStatus(message, success = false) {
+        status.textContent = message;
+        status.style.color = success ? "#00ff00" : "#ff4444";
     }
 
     // Register a new user
-    async function handleRegister() {
+    window.handleRegister = async function() {
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
 
@@ -35,31 +25,21 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
+        const user = new Parse.User();
+        user.set("username", username);
+        user.set("password", password);
+        user.set("email", `${username}@chatsphere.com`); // Optional email for Parse compatibility
+
         try {
-            const { data, error } = await supabase
-                .from("users")
-                .select("username")
-                .eq("username", username);
-
-            if (error) throw error;
-            if (data.length > 0) {
-                showStatus("Username already taken.");
-                return;
-            }
-
-            const { error: insertError } = await supabase
-                .from("users")
-                .insert([{ username, password }]);
-
-            if (insertError) throw insertError;
+            await user.signUp();
             showStatus("Registered! Please log in.", true);
         } catch (error) {
             showStatus("Error registering: " + error.message);
         }
-    }
+    };
 
     // Log in an existing user
-    async function handleLogin() {
+    window.handleLogin = async function() {
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
 
@@ -69,103 +49,88 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         try {
-            const { data, error } = await supabase
-                .from("users")
-                .select("*")
-                .eq("username", username)
-                .single();
-
-            if (error) throw error;
-            if (!data || data.password !== password) {
-                showStatus("Invalid username or password.");
-                return;
-            }
-
+            const user = await Parse.User.logIn(username, password);
             sessionStorage.setItem("chatSphereUser", username);
             authPanel.classList.add("hidden");
             chatPanel.classList.remove("hidden");
             loadMessages();
         } catch (error) {
-            showStatus("Error logging in: " + error.message);
+            showStatus("Invalid username or password.");
         }
-    }
+    };
 
     // Send a message
-    async function handleSendMessage(event) {
+    window.handleSendMessage = async function(event) {
         event.preventDefault();
         const username = sessionStorage.getItem("chatSphereUser");
-        const message = document.getElementById("chat-input").value.trim();
+        const content = document.getElementById("chat-input").value.trim();
 
-        if (!message || !username) return;
+        if (!content || !username) return;
+
+        const Message = Parse.Object.extend("Messages");
+        const message = new Message();
+        message.set("sender", username);
+        message.set("content", content);
+        message.set("timestamp", new Date());
 
         try {
-            const { error } = await supabase
-                .from("messages")
-                .insert([{ username, message, timestamp: Date.now() }]);
-
-            if (error) throw error;
+            await message.save();
             document.getElementById("chat-input").value = "";
         } catch (error) {
             showStatus("Error sending message: " + error.message);
         }
-    }
+    };
 
     // Append a message to the chat
-    function appendMessage({ username, message, timestamp }) {
-        const msgDiv = document.createElement("div");
-        msgDiv.classList.add("message");
-        const time = new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        msgDiv.innerHTML = `<span class="user">${username}</span> <span class="time">[${time}]</span>: ${message}`;
-        messagesDiv.appendChild(msgDiv);
+    function appendMessage(data) {
+        const div = document.createElement("div");
+        div.classList.add("message");
+        const time = new Date(data.get("timestamp")).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        div.innerHTML = `<span class="user">${data.get("sender")}</span> <span class="time">[${time}]</span>: ${data.get("content")}`;
+        messagesDiv.appendChild(div);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
     // Load messages and set up real-time listener
     function loadMessages() {
         messagesDiv.innerHTML = "";
-        supabase
-            .from("messages")
-            .select("*")
-            .order("timestamp", { ascending: true })
-            .then(({ data, error }) => {
-                if (error) {
-                    showStatus("Error loading messages: " + error.message);
-                } else {
-                    data.forEach(appendMessage);
-                }
-            });
+        const Message = Parse.Object.extend("Messages");
+        const query = new Parse.Query(Message);
+        query.ascending("timestamp");
 
-        supabase
-            .channel("public:messages")
-            .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
-                appendMessage(payload.new);
-            })
-            .subscribe();
+        // Initial load of existing messages
+        query.find().then(results => {
+            results.forEach(appendMessage);
+        }).catch(error => {
+            showStatus("Error loading messages: " + error.message);
+        });
+
+        // Real-time updates with Live Query
+        const subscription = Parse.LiveQuery.subscribe(query);
+        subscription.on("create", appendMessage);
     }
 
     // Clear all messages
-    async function clearChat() {
+    window.clearChat = async function() {
+        const Message = Parse.Object.extend("Messages");
+        const query = new Parse.Query(Message);
         try {
-            const { error } = await supabase
-                .from("messages")
-                .delete()
-                .gte("id", 0);
-
-            if (error) throw error;
+            const messages = await query.find();
+            await Parse.Object.destroyAll(messages);
             messagesDiv.innerHTML = "";
         } catch (error) {
             showStatus("Error clearing chat: " + error.message);
         }
-    }
+    };
 
     // Log out
-    function handleLogout() {
+    window.handleLogout = function() {
+        Parse.User.logOut();
         sessionStorage.removeItem("chatSphereUser");
-        authPanel.classList.remove("hidden");
         chatPanel.classList.add("hidden");
-        statusP.textContent = "";
-        supabase.channel("public:messages").unsubscribe();
-    }
+        authPanel.classList.remove("hidden");
+        showStatus("");
+    };
 
     // Check if already logged in
     if (sessionStorage.getItem("chatSphereUser")) {
@@ -173,11 +138,4 @@ document.addEventListener("DOMContentLoaded", function() {
         chatPanel.classList.remove("hidden");
         loadMessages();
     }
-
-    // Expose functions globally
-    window.handleRegister = handleRegister;
-    window.handleLogin = handleLogin;
-    window.handleSendMessage = handleSendMessage;
-    window.clearChat = clearChat;
-    window.handleLogout = handleLogout;
 });
