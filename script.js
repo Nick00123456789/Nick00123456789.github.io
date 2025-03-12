@@ -1,3 +1,5 @@
+console.log('Script loaded and running!');
+
 // Initialize Supabase Client
 const supabaseUrl = 'https://kigbtbacxkfeevmyvioa.supabase.co'; // Replace with your Project URL
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZ2J0YmFjeGtmZWV2bXl2aW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTgyNzQsImV4cCI6MjA1NzI5NDI3NH0.OqMLrZ2NzZ6CMNaZcKKHBA7V1PTQfy7g5MKv8XT1-N4'; // Replace with your Anon Key
