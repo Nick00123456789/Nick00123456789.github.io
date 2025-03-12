@@ -1,86 +1,95 @@
-       
-        const supabase = createClient('https://kigbtbacxkfeevmyvioa.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZ2J0YmFjeGtmZWV2bXl2aW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTgyNzQsImV4cCI6MjA1NzI5NDI3NH0.OqMLrZ2NzZ6CMNaZcKKHBA7V1PTQfy7g5MKv8XT1-N4');
+// DOM Elements
+const authScreen = document.getElementById("auth-screen");
+const chatScreen = document.getElementById("chat-screen");
+const chatBox = document.getElementById("chat-box");
+const messageInput = document.getElementById("message");
+const authMessage = document.getElementById("auth-message");
 
+// Simulated local storage for users and messages
+const users = JSON.parse(localStorage.getItem("users")) || {};
+const messages = JSON.parse(localStorage.getItem("messages")) || [];
 
-        const authScreen = document.getElementById("auth-screen");
-        const chatScreen = document.getElementById("chat-screen");
-        const chatBox = document.getElementById("chat-box");
-        const messageInput = document.getElementById("message");
+function saveToLocalStorage() {
+    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem("messages", JSON.stringify(messages));
+}
 
-        async function register() {
-            const username = document.getElementById("auth-username").value;
-            const password = document.getElementById("auth-password").value;
+async function register() {
+    const username = document.getElementById("auth-username").value.trim();
+    const password = document.getElementById("auth-password").value;
 
-            if (!username || !password) {
-                alert("Please enter a username and password.");
-                return;
-            }
+    if (!username || !password) {
+        authMessage.textContent = "Please enter a username and password.";
+        return;
+    }
 
-            const { data, error } = await supabase.auth.signUp({
-                email: `${username}@chatapp.com`,
-                password: password
-            });
+    if (users[username]) {
+        authMessage.textContent = "Username already exists!";
+        return;
+    }
 
-            if (error) {
-                alert("Registration failed: " + error.message);
-            } else {
-                alert("Registration successful! Please log in.");
-            }
-        }
+    users[username] = { password, email: `${username}@chatapp.com` };
+    saveToLocalStorage();
+    authMessage.textContent = "Registration successful! Please log in.";
+    authMessage.style.color = "#00ff00";
+}
 
-        async function login() {
-            const username = document.getElementById("auth-username").value;
-            const password = document.getElementById("auth-password").value;
+async function login() {
+    const username = document.getElementById("auth-username").value.trim();
+    const password = document.getElementById("auth-password").value;
 
-            if (!username || !password) {
-                alert("Please enter both username and password.");
-                return;
-            }
+    if (!username || !password) {
+        authMessage.textContent = "Please enter both username and password.";
+        return;
+    }
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: `${username}@chatapp.com`,
-                password: password
-            });
+    if (!users[username] || users[username].password !== password) {
+        authMessage.textContent = "Invalid username or password.";
+        return;
+    }
 
-            if (error) {
-                alert("Invalid login. Please try again.");
-            } else {
-                sessionStorage.setItem("username", username);
-                authScreen.classList.add("hidden");
-                chatScreen.classList.remove("hidden");
-                loadMessages();
-            }
-        }
+    sessionStorage.setItem("username", username);
+    authScreen.classList.add("hidden");
+    chatScreen.classList.remove("hidden");
+    loadMessages();
+}
 
-        async function sendMessage() {
-            const username = sessionStorage.getItem("username");
-            const message = messageInput.value.trim();
-            if (!message) return;
+async function sendMessage() {
+    const username = sessionStorage.getItem("username");
+    const message = messageInput.value.trim();
 
-            await supabase.from("messages").insert([{ username, message }]);
-            messageInput.value = "";
-        }
+    if (!message || !username) return;
 
-        supabase.channel("chat-room")
-            .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
-                displayMessage(payload.new.username, payload.new.message);
-            })
-            .subscribe();
+    const newMessage = { username, message, timestamp: new Date().toISOString() };
+    messages.push(newMessage);
+    saveToLocalStorage();
+    displayMessage(username, message);
+    messageInput.value = "";
+}
 
-        function displayMessage(username, msg) {
-            const newMessage = document.createElement("p");
-            newMessage.textContent = `${username}: ${msg}`;
-            chatBox.appendChild(newMessage);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+function displayMessage(username, msg) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message");
+    messageElement.innerHTML = `<span class="username">${username}</span>: ${msg}`;
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-        async function loadMessages() {
-            const { data } = await supabase.from("messages").select("*").order("timestamp", { ascending: true });
-            data.forEach(msg => displayMessage(msg.username, msg.message));
-        }
+function loadMessages() {
+    chatBox.innerHTML = "";
+    messages.forEach(msg => displayMessage(msg.username, msg.message));
+}
 
-        function logout() {
-            sessionStorage.removeItem("username");
-            authScreen.classList.remove("hidden");
-            chatScreen.classList.add("hidden");
-        }
+function logout() {
+    sessionStorage.removeItem("username");
+    authScreen.classList.remove("hidden");
+    chatScreen.classList.add("hidden");
+    authMessage.textContent = "";
+}
+
+// Initial load
+if (sessionStorage.getItem("username")) {
+    authScreen.classList.add("hidden");
+    chatScreen.classList.remove("hidden");
+    loadMessages();
+}
