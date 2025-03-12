@@ -9,13 +9,15 @@
 <body>
     <main>
         <section id="auth" class="panel">
-            <div class="auth-content">
-                <h1>Chat Sphere</h1>
+            <div class="auth-wrapper">
+                <h1>Welcome</h1> <!-- Changed from "Chat Sphere" to avoid repetition -->
                 <div class="input-group">
-                    <input type="text" id="username" placeholder="Username" required>
-                    <input type="password" id="password" placeholder="Password" required>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
                 </div>
-                <div class="auth-buttons">
+                <div class="auth-actions">
                     <button onclick="handleRegister()">Register</button>
                     <button onclick="handleLogin()">Login</button>
                 </div>
@@ -24,9 +26,9 @@
         </section>
 
         <section id="chat" class="panel hidden">
-            <div class="chat-content">
+            <div class="chat-wrapper">
                 <header>
-                    <h1>Chat Room</h1>
+                    <h1>Chat Sphere</h1> <!-- Moved "Chat Sphere" here -->
                     <div class="chat-controls">
                         <button onclick="clearChat()">Clear</button>
                         <button class="exit" onclick="handleLogout()">Logout</button>
@@ -34,7 +36,7 @@
                 </header>
                 <div id="messages"></div>
                 <form id="message-form" onsubmit="handleSendMessage(event)">
-                    <input type="text" id="chat-input" placeholder="Type a message..." required>
+                    <input type="text" id="chat-input" placeholder="Say something..." required>
                     <button type="submit">Send</button>
                 </form>
             </div>

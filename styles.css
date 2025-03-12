@@ -19,7 +19,7 @@ body {
 
 main {
     width: 100%;
-    max-width: 500px; /* Slightly wider for balance */
+    max-width: 480px;
 }
 
 .panel {
@@ -34,51 +34,56 @@ main {
 }
 
 /* Auth Panel */
-.auth-content {
+.auth-wrapper {
     text-align: center;
 }
 
-.auth-content h1 {
+.auth-wrapper h1 {
     color: #00aaff; /* Blue title */
-    font-size: 2rem; /* Larger for prominence */
+    font-size: 1.75rem;
     margin-bottom: 1.5rem;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; /* Space between inputs */
-    margin-bottom: 1.5rem;
+    gap: 0.5rem; /* Tightened spacing */
 }
 
-.auth-content input {
+.input-group label {
+    text-align: left;
+    font-size: 0.9rem;
+    color: #a0a0a0; /* Subtle gray for labels */
+}
+
+.auth-wrapper input {
     width: 100%;
-    padding: 0.875rem;
+    padding: 0.75rem;
     background: #2a2a2a; /* Dark input background */
     border: 1px solid #404040;
-    border-radius: 8px;
+    border-radius: 6px;
     color: #ffffff;
     font-size: 1rem;
     outline: none; /* Remove default focus outline */
 }
 
-.auth-content input:focus {
-    border-color: #00aaff; /* Blue border on focus */
+.auth-wrapper input:focus {
+    border-color: #00aaff; /* Blue outline on focus */
     box-shadow: 0 0 5px rgba(0, 170, 255, 0.5); /* Subtle glow */
 }
 
-.auth-buttons {
+.auth-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-bottom: 1rem;
+    margin: 1.5rem 0;
 }
 
 button {
-    padding: 0.75rem 1.5rem;
+    padding: 0.625rem 1.25rem;
     background: #00aaff; /* Blue button */
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     color: #ffffff;
     font-size: 1rem;
     cursor: pointer;
@@ -92,11 +97,11 @@ button:hover {
 
 #status {
     font-size: 0.875rem;
-    color: #ff4444; /* Red for errors */
+    margin-top: 1rem;
 }
 
 /* Chat Panel */
-.chat-content {
+.chat-wrapper {
     display: flex;
     flex-direction: column;
     height: 85vh;
@@ -107,21 +112,21 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 header h1 {
     color: #00aaff;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
 }
 
 .chat-controls {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.625rem;
 }
 
 .chat-controls button {
-    padding: 0.625rem 1.25rem;
+    padding: 0.5rem 1rem;
 }
 
 .exit {
@@ -136,9 +141,9 @@ header h1 {
     flex: 1;
     background: #2a2a2a;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.9375rem;
     overflow-y: auto;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -155,23 +160,22 @@ header h1 {
 .time {
     color: #666666;
     font-size: 0.75rem;
-    margin-left: 0.5rem;
+    margin-left: 0.3125rem;
 }
 
 #message-form {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.625rem;
 }
 
 #chat-input {
     flex: 1;
-    padding: 0.875rem;
+    padding: 0.75rem;
     background: #2a2a2a;
     border: 1px solid #404040;
-    border-radius: 8px;
+    border-radius: 6px;
     color: #ffffff;
     font-size: 1rem;
-    outline: none;
 }
 
 #chat-input:focus {
@@ -180,7 +184,7 @@ header h1 {
 }
 
 #message-form button {
-    padding: 0.875rem 1.5rem;
+    padding: 0.75rem 1.25rem;
 }
 
 /* Mobile Adjustments */
@@ -193,19 +197,19 @@ header h1 {
         padding: 1rem;
     }
 
-    .auth-content h1,
+    .auth-wrapper h1,
     header h1 {
         font-size: 1.5rem;
     }
 
-    button,
-    .auth-content input,
-    #chat-input {
-        padding: 0.75rem;
+    .auth-wrapper input,
+    #chat-input,
+    button {
         font-size: 0.9375rem;
+        padding: 0.625rem;
     }
 
-    .chat-content {
+    .chat-wrapper {
         height: 90vh;
     }
 }
