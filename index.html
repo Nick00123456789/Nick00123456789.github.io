@@ -3,37 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Chat Sphere</title>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div id="auth-screen" class="screen">
-        <div class="auth-container">
-            <h2>Chat App</h2>
-            <input type="text" id="auth-username" placeholder="Username" required>
-            <input type="password" id="auth-password" placeholder="Password" required>
-            <div class="auth-buttons">
-                <button onclick="register()">Register</button>
-                <button onclick="login()">Login</button>
+    <main>
+        <section id="auth" class="panel">
+            <div class="auth-wrapper">
+                <h1>Chat Sphere</h1>
+                <input type="text" id="username" placeholder="Enter username" required>
+                <input type="password" id="password" placeholder="Enter password" required>
+                <div class="auth-actions">
+                    <button onclick="handleRegister()">Register</button>
+                    <button onclick="handleLogin()">Login</button>
+                </div>
+                <p id="status"></p>
             </div>
-            <p id="auth-message"></p>
-        </div>
-    </div>
+        </section>
 
-    <div id="chat-screen" class="screen hidden">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h2>Live Chat</h2>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+        <section id="chat" class="panel hidden">
+            <div class="chat-wrapper">
+                <header>
+                    <h1>Chat Room</h1>
+                    <div class="chat-controls">
+                        <button onclick="clearChat()">Clear</button>
+                        <button class="exit" onclick="handleLogout()">Logout</button>
+                    </div>
+                </header>
+                <div id="messages"></div>
+                <form id="message-form" onsubmit="handleSendMessage(event)">
+                    <input type="text" id="chat-input" placeholder="Say something..." required>
+                    <button type="submit">Send</button>
+                </form>
             </div>
-            <div id="chat-box"></div>
-            <div class="message-input">
-                <input type="text" id="message" placeholder="Type a message..." required>
-                <button onclick="sendMessage()">Send</button>
-            </div>
-        </div>
-    </div>
-    
-    <script src="script.js"></script>
+        </section>
+    </main>
+    <script src="./script.js"></script>
 </body>
 </html>

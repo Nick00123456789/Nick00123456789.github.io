@@ -1,95 +1,107 @@
 // DOM Elements
-const authScreen = document.getElementById("auth-screen");
-const chatScreen = document.getElementById("chat-screen");
-const chatBox = document.getElementById("chat-box");
-const messageInput = document.getElementById("message");
-const authMessage = document.getElementById("auth-message");
+const authPanel = document.getElementById("auth");
+const chatPanel = document.getElementById("chat");
+const messagesDiv = document.getElementById("messages");
+const statusP = document.getElementById("status");
+const messageForm = document.getElementById("message-form");
 
-// Simulated local storage for users and messages
-const users = JSON.parse(localStorage.getItem("users")) || {};
-const messages = JSON.parse(localStorage.getItem("messages")) || [];
+// Local storage data
+const users = JSON.parse(localStorage.getItem("chatSphereUsers")) || {};
+const messages = JSON.parse(localStorage.getItem("chatSphereMessages")) || [];
 
-function saveToLocalStorage() {
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("messages", JSON.stringify(messages));
+function saveData() {
+    localStorage.setItem("chatSphereUsers", JSON.stringify(users));
+    localStorage.setItem("chatSphereMessages", JSON.stringify(messages));
 }
 
-async function register() {
-    const username = document.getElementById("auth-username").value.trim();
-    const password = document.getElementById("auth-password").value;
+function showStatus(message, isSuccess = false) {
+    statusP.textContent = message;
+    statusP.style.color = isSuccess ? "#00ff00" : "#ff4444";
+}
+
+function handleRegister() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
 
     if (!username || !password) {
-        authMessage.textContent = "Please enter a username and password.";
+        showStatus("Username and password are required.");
         return;
     }
 
     if (users[username]) {
-        authMessage.textContent = "Username already exists!";
+        showStatus("Username taken. Try another.");
         return;
     }
 
-    users[username] = { password, email: `${username}@chatapp.com` };
-    saveToLocalStorage();
-    authMessage.textContent = "Registration successful! Please log in.";
-    authMessage.style.color = "#00ff00";
+    users[username] = { password };
+    saveData();
+    showStatus("Registered! Now log in.", true);
 }
 
-async function login() {
-    const username = document.getElementById("auth-username").value.trim();
-    const password = document.getElementById("auth-password").value;
+function handleLogin() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
 
     if (!username || !password) {
-        authMessage.textContent = "Please enter both username and password.";
+        showStatus("Username and password are required.");
         return;
     }
 
     if (!users[username] || users[username].password !== password) {
-        authMessage.textContent = "Invalid username or password.";
+        showStatus("Wrong username or password.");
         return;
     }
 
-    sessionStorage.setItem("username", username);
-    authScreen.classList.add("hidden");
-    chatScreen.classList.remove("hidden");
-    loadMessages();
+    sessionStorage.setItem("chatSphereUser", username);
+    authPanel.classList.add("hidden");
+    chatPanel.classList.remove("hidden");
+    renderMessages();
 }
 
-async function sendMessage() {
-    const username = sessionStorage.getItem("username");
-    const message = messageInput.value.trim();
+function handleSendMessage(event) {
+    event.preventDefault();
+    const username = sessionStorage.getItem("chatSphereUser");
+    const message = document.getElementById("chat-input").value.trim();
 
     if (!message || !username) return;
 
-    const newMessage = { username, message, timestamp: new Date().toISOString() };
+    const newMessage = { username, message, timestamp: Date.now() };
     messages.push(newMessage);
-    saveToLocalStorage();
-    displayMessage(username, message);
-    messageInput.value = "";
+    saveData();
+    appendMessage(newMessage);
+    document.getElementById("chat-input").value = "";
 }
 
-function displayMessage(username, msg) {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message");
-    messageElement.innerHTML = `<span class="username">${username}</span>: ${msg}`;
-    chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight;
+function appendMessage({ username, message, timestamp }) {
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("message");
+    const time = new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    msgDiv.innerHTML = `<span class="user">${username}</span> <span class="time">[${time}]</span>: ${message}`;
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-function loadMessages() {
-    chatBox.innerHTML = "";
-    messages.forEach(msg => displayMessage(msg.username, msg.message));
+function renderMessages() {
+    messagesDiv.innerHTML = "";
+    messages.forEach(appendMessage);
 }
 
-function logout() {
-    sessionStorage.removeItem("username");
-    authScreen.classList.remove("hidden");
-    chatScreen.classList.add("hidden");
-    authMessage.textContent = "";
+function clearChat() {
+    messages.length = 0;
+    saveData();
+    renderMessages();
 }
 
-// Initial load
-if (sessionStorage.getItem("username")) {
-    authScreen.classList.add("hidden");
-    chatScreen.classList.remove("hidden");
-    loadMessages();
+function handleLogout() {
+    sessionStorage.removeItem("chatSphereUser");
+    authPanel.classList.remove("hidden");
+    chatPanel.classList.add("hidden");
+    statusP.textContent = "";
+}
+
+// Check if already logged in
+if (sessionStorage.getItem("chatSphereUser")) {
+    authPanel.classList.add("hidden");
+    chatPanel.classList.remove("hidden");
+    renderMessages();
 }
