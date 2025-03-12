@@ -24,7 +24,7 @@ async function login() {
     if (error) {
         alert("Invalid login. Please try again.");
     } else {
-        sessionStorage.setItem("user", username);
+        sessionStorage.setItem("username", username);
         loginScreen.classList.add("hidden");
         chatScreen.classList.remove("hidden");
         loadMessages();
@@ -32,34 +32,34 @@ async function login() {
 }
 
 async function sendMessage() {
-    const username = sessionStorage.getItem("user");
+    const username = sessionStorage.getItem("username");
     const message = messageInput.value.trim();
     if (!message) return;
 
-    await supabase.from("messages").insert([{ user: username, message }]);
+    await supabase.from("messages").insert([{ username, message }]);
     messageInput.value = "";
 }
 
 supabase.channel("chat-room")
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
-        displayMessage(payload.new.user, payload.new.message);
+        displayMessage(payload.new.username, payload.new.message);
     })
     .subscribe();
 
-function displayMessage(user, msg) {
+function displayMessage(username, msg) {
     const newMessage = document.createElement("p");
-    newMessage.textContent = `${user}: ${msg}`;
+    newMessage.textContent = `${username}: ${msg}`;
     chatBox.appendChild(newMessage);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 async function loadMessages() {
     const { data } = await supabase.from("messages").select("*").order("timestamp", { ascending: true });
-    data.forEach(msg => displayMessage(msg.user, msg.message));
+    data.forEach(msg => displayMessage(msg.username, msg.message));
 }
 
 function logout() {
-    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("username");
     loginScreen.classList.remove("hidden");
     chatScreen.classList.add("hidden");
 }
