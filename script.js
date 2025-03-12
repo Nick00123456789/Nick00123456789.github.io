@@ -1,11 +1,9 @@
-// DOM Elements
 const authPanel = document.getElementById("auth");
 const chatPanel = document.getElementById("chat");
 const messagesDiv = document.getElementById("messages");
 const statusP = document.getElementById("status");
 const messageForm = document.getElementById("message-form");
 
-// Local storage data
 const users = JSON.parse(localStorage.getItem("chatSphereUsers")) || {};
 const messages = JSON.parse(localStorage.getItem("chatSphereMessages")) || [];
 
@@ -29,13 +27,13 @@ function handleRegister() {
     }
 
     if (users[username]) {
-        showStatus("Username taken. Try another.");
+        showStatus("Username already taken.");
         return;
     }
 
     users[username] = { password };
     saveData();
-    showStatus("Registered! Now log in.", true);
+    showStatus("Registered! Please log in.", true);
 }
 
 function handleLogin() {
@@ -48,7 +46,7 @@ function handleLogin() {
     }
 
     if (!users[username] || users[username].password !== password) {
-        showStatus("Wrong username or password.");
+        showStatus("Invalid username or password.");
         return;
     }
 
@@ -99,7 +97,6 @@ function handleLogout() {
     statusP.textContent = "";
 }
 
-// Check if already logged in
 if (sessionStorage.getItem("chatSphereUser")) {
     authPanel.classList.add("hidden");
     chatPanel.classList.remove("hidden");

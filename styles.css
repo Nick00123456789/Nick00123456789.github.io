@@ -6,15 +6,13 @@
 
 body {
     font-family: "Roboto", Arial, sans-serif;
-    background: #0f0f0f; /* Black background */
-    color: #d0d0d0; /* Light gray text */
+    background: #0f0f0f;
+    color: #d0d0d0;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     padding: 1rem;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 main {
@@ -23,7 +21,7 @@ main {
 }
 
 .panel {
-    background: #1c1c1c; /* Dark gray panel */
+    background: #1c1c1c;
     border-radius: 12px;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
     padding: 1.5rem;
@@ -39,7 +37,7 @@ main {
 }
 
 .auth-wrapper h1 {
-    color: #00aaff; /* Blue title */
+    color: #00aaff;
     font-size: 1.75rem;
     margin-bottom: 1.5rem;
 }
@@ -47,29 +45,28 @@ main {
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Tightened spacing */
+    gap: 0.75rem; /* Adjusted for better spacing */
 }
 
 .input-group label {
     text-align: left;
     font-size: 0.9rem;
-    color: #a0a0a0; /* Subtle gray for labels */
+    color: #a0a0a0;
 }
 
 .auth-wrapper input {
     width: 100%;
     padding: 0.75rem;
-    background: #2a2a2a; /* Dark input background */
+    background: #2a2a2a;
     border: 1px solid #404040;
     border-radius: 6px;
     color: #ffffff;
     font-size: 1rem;
-    outline: none; /* Remove default focus outline */
 }
 
 .auth-wrapper input:focus {
-    border-color: #00aaff; /* Blue outline on focus */
-    box-shadow: 0 0 5px rgba(0, 170, 255, 0.5); /* Subtle glow */
+    border-color: #00aaff;
+    outline: none;
 }
 
 .auth-actions {
@@ -81,18 +78,17 @@ main {
 
 button {
     padding: 0.625rem 1.25rem;
-    background: #00aaff; /* Blue button */
+    background: #00aaff;
     border: none;
     border-radius: 6px;
     color: #ffffff;
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
 }
 
 button:hover {
-    background: #0088cc; /* Darker blue */
+    background: #0088cc;
 }
 
 #status {
@@ -105,7 +101,6 @@ button:hover {
     display: flex;
     flex-direction: column;
     height: 85vh;
-    max-height: 100vh;
 }
 
 header {
@@ -130,7 +125,7 @@ header h1 {
 }
 
 .exit {
-    background: #ff5555; /* Red logout */
+    background: #ff5555;
 }
 
 .exit:hover {
@@ -144,7 +139,6 @@ header h1 {
     padding: 0.9375rem;
     overflow-y: auto;
     margin-bottom: 1.25rem;
-    -webkit-overflow-scrolling: touch;
 }
 
 .message {
@@ -180,7 +174,7 @@ header h1 {
 
 #chat-input:focus {
     border-color: #00aaff;
-    box-shadow: 0 0 5px rgba(0, 170, 255, 0.5);
+    outline: none;
 }
 
 #message-form button {
@@ -192,23 +186,19 @@ header h1 {
     body {
         padding: 0.5rem;
     }
-
     .panel {
         padding: 1rem;
     }
-
     .auth-wrapper h1,
     header h1 {
         font-size: 1.5rem;
     }
-
     .auth-wrapper input,
     #chat-input,
     button {
         font-size: 0.9375rem;
         padding: 0.625rem;
     }
-
     .chat-wrapper {
         height: 90vh;
     }
