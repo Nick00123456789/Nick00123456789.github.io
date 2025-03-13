@@ -25,6 +25,11 @@ function debounce(func, wait) {
     };
 }
 
+// Utility to add delay
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     const authPanel = document.getElementById("auth");
     const chatPanel = document.getElementById("chat");
@@ -200,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         try {
-            // Check for username uniqueness
+            console.log("Checking username uniqueness...");
             const usersSnapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
             if (usersSnapshot.exists()) {
                 showStatus("Username is already taken.");
@@ -208,11 +213,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            // Register user with Firebase Auth
+            console.log("Registering user with email:", email);
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const uid = userCredential.user.uid;
 
-            // Write user data after authentication
+            // Wait for auth state to propagate (mobile fix)
+            await delay(500); // 500ms delay
+            console.log("User authenticated, UID:", uid);
+
+            console.log("Writing user data to database...");
             await db.ref("users/" + uid).set({
                 username: username,
                 lastLogin: Date.now()
