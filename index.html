@@ -21,8 +21,8 @@
                     <input type="password" id="password" placeholder="Enter password" required>
                 </div>
                 <div class="auth-actions">
-                    <button onclick="handleRegister()">Register</button>
-                    <button onclick="handleLogin()">Login</button>
+                    <button id="register-btn" onclick="handleRegister()">Register</button>
+                    <button id="login-btn" onclick="handleLogin()">Login</button>
                 </div>
                 <p id="status"></p>
             </div>
@@ -57,7 +57,7 @@
                             <div id="dm-messages"></div>
                             <form id="dm-form" onsubmit="handleSendDM(event)">
                                 <input type="text" id="dm-input" placeholder="Send a DM..." required>
-                                <button type="submit">Send</button>
+                                <button type="submit" id="dm-send-btn">Send</button>
                             </form>
                         </div>
                     </div>

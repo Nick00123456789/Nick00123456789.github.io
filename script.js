@@ -16,7 +16,6 @@ let currentDMRecipient = null;
 let allUsers = {};
 let onlineUsers = {};
 
-// Debounce function for search
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -37,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
         status.style.color = success ? "#00ff00" : "#ff4444";
     }
 
-    function appendMessage(data, container, isDM = false) {
+    function appendMessage(data, container) {
         const div = document.createElement("div");
         div.classList.add("message");
         const sender = data.val().sender;
@@ -64,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const dmPath = `dms/${uid < recipient.uid ? uid + "_" + recipient.uid : recipient.uid + "_" + uid}`;
         dmMessagesDiv.innerHTML = "";
         db.ref(dmPath).orderByChild("timestamp").on("child_added", (snapshot) => {
-            appendMessage(snapshot, dmMessagesDiv, true);
+            appendMessage(snapshot, dmMessagesDiv);
         });
     }
 
@@ -134,7 +133,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.handleSendDM = async function(event) {
         event.preventDefault();
-        if (!currentDMRecipient) return;
+        const sendBtn = document.getElementById("dm-send-btn");
+        sendBtn.disabled = true;
+
+        if (!currentDMRecipient) {
+            showStatus("No recipient selected.");
+            sendBtn.disabled = false;
+            return;
+        }
+
         const username = sessionStorage.getItem("chatSphereUser");
         const content = document.getElementById("dm-input").value.trim();
         const uid = sessionStorage.getItem("uid");
@@ -142,6 +149,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (!content || !username) {
             showStatus("Message or username missing.");
+            sendBtn.disabled = false;
             return;
         }
 
@@ -155,20 +163,27 @@ document.addEventListener("DOMContentLoaded", function() {
             showStatus("DM sent!", true);
         } catch (error) {
             showStatus("Error sending DM: " + error.message);
+        } finally {
+            sendBtn.disabled = false;
         }
     };
 
     window.handleRegister = async function() {
+        const registerBtn = document.getElementById("register-btn");
+        registerBtn.disabled = true;
+
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
         const email = `${username.toLowerCase()}@chatsphere.com`;
 
         if (!username || !password) {
             showStatus("Username and password are required.");
+            registerBtn.disabled = false;
             return;
         }
         if (password.length < 6) {
             showStatus("Password must be at least 6 characters.");
+            registerBtn.disabled = false;
             return;
         }
 
@@ -176,13 +191,18 @@ document.addEventListener("DOMContentLoaded", function() {
             const usersSnapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
             if (usersSnapshot.exists()) {
                 showStatus("Username is already taken.");
+                registerBtn.disabled = false;
                 return;
             }
 
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            await db.ref("users/" + userCredential.user.uid).set({ username });
+            const uid = userCredential.user.uid;
+            await db.ref("users/" + uid).set({
+                username: username,
+                lastLogin: Date.now()
+            });
             sessionStorage.setItem("chatSphereUser", username);
-            sessionStorage.setItem("uid", userCredential.user.uid);
+            sessionStorage.setItem("uid", uid);
             authPanel.classList.add("hidden");
             chatPanel.classList.remove("hidden");
             updateOnlineStatus(true);
@@ -192,31 +212,60 @@ document.addEventListener("DOMContentLoaded", function() {
             showStatus("Welcome, " + username + "!", true);
         } catch (error) {
             showStatus("Error registering: " + error.message);
+        } finally {
+            registerBtn.disabled = false;
         }
     };
 
     window.handleLogin = async function() {
+        const loginBtn = document.getElementById("login-btn");
+        loginBtn.disabled = true;
+
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
         const email = `${username.toLowerCase()}@chatsphere.com`;
 
         if (!username || !password) {
             showStatus("Username and password are required.");
+            loginBtn.disabled = false;
             return;
         }
 
         try {
             const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            const uid = userCredential.user.uid;
+            const lastLogin = Date.now();
+
+            await db.ref("users/" + uid).update({ lastLogin });
             sessionStorage.setItem("chatSphereUser", username);
-            sessionStorage.setItem("uid", userCredential.user.uid);
+            sessionStorage.setItem("uid", uid);
+
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    db.ref("users/" + user.uid).on("value", snapshot => {
+                        const userData = snapshot.val();
+                        if (userData && userData.lastLogin > lastLogin) {
+                            auth.signOut();
+                            showStatus("Logged out: Another device logged in.");
+                            authPanel.classList.remove("hidden");
+                            chatPanel.classList.add("hidden");
+                            sessionStorage.clear();
+                        }
+                    });
+                }
+            });
+
             authPanel.classList.add("hidden");
             chatPanel.classList.remove("hidden");
             updateOnlineStatus(true);
             loadMessages();
             loadAllUsers();
             loadOnlineUsers();
+            showStatus("Logged in as " + username + "!", true);
         } catch (error) {
             showStatus("Invalid username or password: " + error.message);
+        } finally {
+            loginBtn.disabled = false;
         }
     };
 
@@ -264,12 +313,21 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     if (sessionStorage.getItem("chatSphereUser") && auth.currentUser) {
-        authPanel.classList.add("hidden");
-        chatPanel.classList.remove("hidden");
-        updateOnlineStatus(true);
-        loadMessages();
-        loadAllUsers();
-        loadOnlineUsers();
+        const uid = sessionStorage.getItem("uid");
+        db.ref("users/" + uid).once("value", snapshot => {
+            const userData = snapshot.val();
+            if (userData && userData.lastLogin > Date.now() - 10000) { // Check within 10 seconds
+                authPanel.classList.add("hidden");
+                chatPanel.classList.remove("hidden");
+                updateOnlineStatus(true);
+                loadMessages();
+                loadAllUsers();
+                loadOnlineUsers();
+            } else {
+                auth.signOut();
+                sessionStorage.clear();
+            }
+        });
     } else {
         authPanel.classList.remove("hidden");
         chatPanel.classList.add("hidden");
