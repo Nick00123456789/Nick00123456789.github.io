@@ -7,6 +7,7 @@ const firebaseConfig = {
     storageBucket: "nickproject.appspot.com",
     messagingSenderId: "178516922595 ",
     appId: "1:178516922595:web:4ca9977e5809c31d0d35d6"
+
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -55,6 +56,8 @@ document.addEventListener("DOMContentLoaded", function() {
         messagesDiv.innerHTML = "";
         db.ref("messages").orderByChild("timestamp").on("child_added", (snapshot) => {
             appendMessage(snapshot, messagesDiv);
+        }, (error) => {
+            console.error("Error loading messages:", error);
         });
     }
 
@@ -64,20 +67,26 @@ document.addEventListener("DOMContentLoaded", function() {
         dmMessagesDiv.innerHTML = "";
         db.ref(dmPath).orderByChild("timestamp").on("child_added", (snapshot) => {
             appendMessage(snapshot, dmMessagesDiv);
+        }, (error) => {
+            console.error("Error loading DMs:", error);
+            showStatus("Failed to load DMs: " + error.message);
         });
     }
 
     function updateOnlineStatus(isOnline) {
         const uid = sessionStorage.getItem("uid");
         if (uid) {
-            db.ref("online/" + uid).set(isOnline ? true : null);
+            db.ref("online/" + uid).set(isOnline ? true : null)
+                .catch(error => console.error("Error updating online status:", error));
         }
     }
 
     function loadAllUsers() {
-        db.ref("users").once("value", (snapshot) => {
+        db.ref("users").on("value", (snapshot) => {
             allUsers = snapshot.val() || {};
             searchUsers();
+        }, (error) => {
+            console.error("Error loading users:", error);
         });
     }
 
@@ -91,6 +100,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
             searchUsers();
+        }, (error) => {
+            console.error("Error loading online users:", error);
         });
     }
 
@@ -100,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
         userList.innerHTML = "";
         for (let uid in allUsers) {
             const username = allUsers[uid].username;
-            if (username.toLowerCase().includes(searchInput) || searchInput === "") {
+            if (username && (username.toLowerCase().includes(searchInput) || searchInput === "")) {
                 const isOnline = onlineUsers[username] ? 'online' : 'offline';
                 const div = document.createElement("div");
                 div.classList.add("user-item");
@@ -162,6 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("dm-input").value = "";
             showStatus("DM sent!", true);
         } catch (error) {
+            console.error("Error sending DM:", error);
             showStatus("Error sending DM: " + error.message);
         } finally {
             sendBtn.disabled = false;
@@ -188,6 +200,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         try {
+            // Check for username uniqueness
             const usersSnapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
             if (usersSnapshot.exists()) {
                 showStatus("Username is already taken.");
@@ -195,12 +208,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
+            // Register user with Firebase Auth
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const uid = userCredential.user.uid;
+
+            // Write user data after authentication
             await db.ref("users/" + uid).set({
                 username: username,
                 lastLogin: Date.now()
             });
+
             sessionStorage.setItem("chatSphereUser", username);
             sessionStorage.setItem("uid", uid);
             authPanel.classList.add("hidden");
@@ -211,6 +228,7 @@ document.addEventListener("DOMContentLoaded", function() {
             loadOnlineUsers();
             showStatus("Welcome, " + username + "!", true);
         } catch (error) {
+            console.error("Error registering:", error);
             showStatus("Error registering: " + error.message);
         } finally {
             registerBtn.disabled = false;
@@ -263,6 +281,7 @@ document.addEventListener("DOMContentLoaded", function() {
             loadOnlineUsers();
             showStatus("Logged in as " + username + "!", true);
         } catch (error) {
+            console.error("Error logging in:", error);
             showStatus("Invalid username or password: " + error.message);
         } finally {
             loginBtn.disabled = false;
@@ -288,6 +307,7 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("chat-input").value = "";
             showStatus("Message sent!", true);
         } catch (error) {
+            console.error("Error sending message:", error);
             showStatus("Error sending message: " + error.message);
         }
     };
@@ -305,9 +325,11 @@ document.addEventListener("DOMContentLoaded", function() {
             showStatus("Logged out successfully.", true);
             db.ref("messages").off();
             db.ref("online").off();
+            db.ref("users").off();
             if (currentDMRecipient) db.ref("dms").off();
             currentDMRecipient = null;
         }).catch(error => {
+            console.error("Error logging out:", error);
             showStatus("Error logging out: " + error.message);
         });
     };
@@ -316,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const uid = sessionStorage.getItem("uid");
         db.ref("users/" + uid).once("value", snapshot => {
             const userData = snapshot.val();
-            if (userData && userData.lastLogin > Date.now() - 10000) { // Check within 10 seconds
+            if (userData && userData.lastLogin > Date.now() - 10000) {
                 authPanel.classList.add("hidden");
                 chatPanel.classList.remove("hidden");
                 updateOnlineStatus(true);
