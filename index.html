@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Sphere</title>
     <link rel="stylesheet" href="./styles.css">
-    <script src="./firebase-app.js"></script>
+    <script src="./8.10.1/firebase-app.js"></script>
     <script src="./firebase-auth.js"></script>
     <script src="./firebase-database.js"></script>
 </head>
@@ -36,27 +36,30 @@
                         <button class="exit" onclick="handleLogout()">Logout</button>
                     </div>
                 </header>
-                <div id="online-users" style="padding: 10px;"></div>
-                <div id="user-search" style="padding: 10px; position: relative;">
-                    <input type="text" id="search-input" placeholder="Search users..." oninput="searchUsers()">
-                    <div id="user-list" style="max-height: 200px; overflow-y: auto; margin-top: 40px;"></div>
-                </div>
-                <div id="public-chat">
-                    <div id="messages" style="max-height: 60vh; overflow-y: auto; padding: 10px;"></div>
-                    <form id="message-form" onsubmit="handleSendMessage(event)">
-                        <input type="text" id="chat-input" placeholder="Say something..." required>
-                        <button type="submit">Send</button>
-                    </form>
-                </div>
-                <div id="dm-modal" class="hidden">
-                    <div class="dm-content">
-                        <h2>DM with <span id="dm-recipient"></span></h2>
-                        <button onclick="closeDM()">Back to Public Chat</button>
-                        <div id="dm-messages" style="max-height: 400px; overflow-y: auto; padding: 10px;"></div>
-                        <form id="dm-form" onsubmit="handleSendDM(event)">
-                            <input type="text" id="dm-input" placeholder="Send a DM..." required>
-                            <button type="submit">Send</button>
-                        </form>
+                <div class="chat-layout">
+                    <div id="user-search">
+                        <h2>Users</h2>
+                        <input type="text" id="search-input" placeholder="Search users..." oninput="searchUsers()">
+                        <div id="user-list"></div>
+                    </div>
+                    <div id="chat-area">
+                        <div id="public-chat" class="chat-section">
+                            <h2>Public Chat</h2>
+                            <div id="messages"></div>
+                            <form id="message-form" onsubmit="handleSendMessage(event)">
+                                <input type="text" id="chat-input" placeholder="Say something..." required>
+                                <button type="submit">Send</button>
+                            </form>
+                        </div>
+                        <div id="dm-chat" class="chat-section hidden">
+                            <h2>DM with <span id="dm-recipient"></span></h2>
+                            <button onclick="closeDM()">Back to Public Chat</button>
+                            <div id="dm-messages"></div>
+                            <form id="dm-form" onsubmit="handleSendDM(event)">
+                                <input type="text" id="dm-input" placeholder="Send a DM..." required>
+                                <button type="submit">Send</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
