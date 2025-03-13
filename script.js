@@ -12,16 +12,142 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
+let currentDMRecipient = null;
+
 document.addEventListener("DOMContentLoaded", function() {
     const authPanel = document.getElementById("auth");
     const chatPanel = document.getElementById("chat");
     const messagesDiv = document.getElementById("messages");
+    const dmMessagesDiv = document.getElementById("dm-messages");
     const status = document.getElementById("status");
+    const dmRecipientSpan = document.getElementById("dm-recipient");
 
     function showStatus(message, success = false) {
         status.textContent = message;
         status.style.color = success ? "#00ff00" : "#ff4444";
     }
+
+    function stringToColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+        return "#" + "00000".substring(0, 6 - c.length) + c;
+    }
+
+    function appendMessage(data, container) {
+        const div = document.createElement("div");
+        div.classList.add("message");
+        const sender = data.val().sender;
+        const time = new Date(data.val().timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const color = stringToColor(sender);
+        div.innerHTML = `<span class="user" style="color: ${color}">${sender}</span> <span class="time">[${time}]</span>: ${data.val().content}`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function loadMessages() {
+        messagesDiv.innerHTML = "";
+        db.ref("messages").orderByChild("timestamp").on("child_added", (snapshot) => {
+            appendMessage(snapshot, messagesDiv);
+        }, (error) => {
+            showStatus("Error loading messages: " + error.message);
+        });
+    }
+
+    function loadDMs(recipient) {
+        const uid = sessionStorage.getItem("uid");
+        const dmPath = `dms/${uid < recipient.uid ? uid : recipient.uid}/${uid < recipient.uid ? recipient.uid : uid}`;
+        dmMessagesDiv.innerHTML = "";
+        db.ref(dmPath).orderByChild("timestamp").on("child_added", (snapshot) => {
+            appendMessage(snapshot, dmMessagesDiv);
+        }, (error) => {
+            showStatus("Error loading DMs: " + error.message);
+        });
+    }
+
+    function updateOnlineStatus(isOnline) {
+        const uid = sessionStorage.getItem("uid");
+        if (uid) {
+            db.ref("online/" + uid).set(isOnline ? true : null);
+        }
+    }
+
+    function loadOnlineUsers() {
+        const onlineDiv = document.getElementById("online-users");
+        db.ref("online").on("value", (snapshot) => {
+            const onlineUsers = snapshot.val() || {};
+            const userPromises = Object.keys(onlineUsers).map(uid =>
+                db.ref("users/" + uid).once("value").then(userSnap => userSnap.val().username)
+            );
+            Promise.all(userPromises).then(users => {
+                onlineDiv.innerHTML = "<strong>Online: </strong>" + (users.length ? users.join(", ") : "None");
+            });
+        });
+    }
+
+    window.searchUsers = function() {
+        const searchInput = document.getElementById("search-input").value.toLowerCase();
+        const userList = document.getElementById("user-list");
+        db.ref("users").once("value", (snapshot) => {
+            const users = snapshot.val();
+            db.ref("online").once("value", (onlineSnapshot) => {
+                const online = onlineSnapshot.val() || {};
+                userList.innerHTML = "";
+                for (let uid in users) {
+                    const username = users[uid].username;
+                    if (username.toLowerCase().includes(searchInput)) {
+                        const isOnline = online[uid] === true;
+                        const div = document.createElement("div");
+                        div.classList.add("user-item");
+                        div.innerHTML = `
+                            <span class="status-circle ${isOnline ? 'online' : 'offline'}"></span>
+                            <span class="user" style="color: ${stringToColor(username)}">${username}</span>
+                        `;
+                        div.onclick = () => startDM({ uid, username });
+                        userList.appendChild(div);
+                    }
+                }
+            });
+        });
+    };
+
+    function startDM(recipient) {
+        if (recipient.uid === sessionStorage.getItem("uid")) return; // No self-DM
+        currentDMRecipient = recipient;
+        dmRecipientSpan.textContent = recipient.username;
+        document.getElementById("dm-chat").classList.remove("hidden");
+        document.getElementById("public-chat").style.flex = "1";
+        if (db.ref("dms")) db.ref("dms").off(); // Clear previous DM listener
+        loadDMs(recipient);
+    }
+
+    window.handleSendDM = async function(event) {
+        event.preventDefault();
+        if (!currentDMRecipient) return;
+        const username = sessionStorage.getItem("chatSphereUser");
+        const content = document.getElementById("dm-input").value.trim();
+        const uid = sessionStorage.getItem("uid");
+        const dmPath = `dms/${uid < currentDMRecipient.uid ? uid : currentDMRecipient.uid}/${uid < currentDMRecipient.uid ? currentDMRecipient.uid : uid}`;
+
+        if (!content || !username) {
+            showStatus("Message or username missing.");
+            return;
+        }
+
+        try {
+            await db.ref(dmPath).push({
+                sender: username,
+                content: content,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            document.getElementById("dm-input").value = "";
+            showStatus("DM sent!", true);
+        } catch (error) {
+            showStatus("Error sending DM: " + error.message);
+        }
+    };
 
     window.handleRegister = async function() {
         const username = document.getElementById("username").value.trim();
@@ -46,12 +172,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             await db.ref("users/" + userCredential.user.uid).set({ username });
-            console.log("User registered and saved:", username);
-            showStatus("Registered! Please log in.", true);
-            document.getElementById("username").value = "";
-            document.getElementById("password").value = "";
+            sessionStorage.setItem("chatSphereUser", username);
+            sessionStorage.setItem("uid", userCredential.user.uid);
+            authPanel.classList.add("hidden");
+            chatPanel.classList.remove("hidden");
+            updateOnlineStatus(true);
+            loadMessages();
+            loadOnlineUsers();
+            searchUsers();
+            showStatus("Welcome, " + username + "!", true);
         } catch (error) {
-            console.error("Register error:", error);
             showStatus("Error registering: " + error.message);
         }
     };
@@ -76,9 +206,11 @@ document.addEventListener("DOMContentLoaded", function() {
             sessionStorage.setItem("uid", userCredential.user.uid);
             authPanel.classList.add("hidden");
             chatPanel.classList.remove("hidden");
+            updateOnlineStatus(true);
             loadMessages();
+            loadOnlineUsers();
+            searchUsers();
         } catch (error) {
-            console.error("Login error:", error);
             showStatus("Invalid username or password: " + error.message);
         }
     };
@@ -99,44 +231,27 @@ document.addEventListener("DOMContentLoaded", function() {
                 content: content,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
-            console.log("Message sent:", content);
             document.getElementById("chat-input").value = "";
             showStatus("Message sent!", true);
         } catch (error) {
-            console.error("Send error:", error);
             showStatus("Error sending message: " + error.message);
         }
     };
 
-    function appendMessage(data) {
-        const div = document.createElement("div");
-        div.classList.add("message");
-        const time = new Date(data.val().timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        div.innerHTML = `<span class="user">${data.val().sender}</span> <span class="time">[${time}]</span>: ${data.val().content}`;
-        messagesDiv.appendChild(div);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    function loadMessages() {
-        messagesDiv.innerHTML = "";
-        console.log("Loading messages...");
-        db.ref("messages").orderByChild("timestamp").on("child_added", (snapshot) => {
-            console.log("New message:", snapshot.val());
-            appendMessage(snapshot);
-        }, (error) => {
-            console.error("Load error:", error);
-            showStatus("Error loading messages: " + error.message);
-        });
-    }
-
     window.handleLogout = function() {
+        updateOnlineStatus(false);
         auth.signOut().then(() => {
             sessionStorage.clear();
             chatPanel.classList.add("hidden");
             authPanel.classList.remove("hidden");
             messagesDiv.innerHTML = "";
+            dmMessagesDiv.innerHTML = "";
+            document.getElementById("dm-chat").classList.add("hidden");
             showStatus("Logged out successfully.", true);
             db.ref("messages").off();
+            db.ref("online").off();
+            if (currentDMRecipient) db.ref(`dms`).off();
+            currentDMRecipient = null;
         }).catch(error => {
             showStatus("Error logging out: " + error.message);
         });
@@ -145,7 +260,10 @@ document.addEventListener("DOMContentLoaded", function() {
     if (sessionStorage.getItem("chatSphereUser") && auth.currentUser) {
         authPanel.classList.add("hidden");
         chatPanel.classList.remove("hidden");
+        updateOnlineStatus(true);
         loadMessages();
+        loadOnlineUsers();
+        searchUsers();
     } else {
         authPanel.classList.remove("hidden");
         chatPanel.classList.add("hidden");

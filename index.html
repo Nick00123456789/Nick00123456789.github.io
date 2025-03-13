@@ -36,11 +36,29 @@
                         <button class="exit" onclick="handleLogout()">Logout</button>
                     </div>
                 </header>
-                <div id="messages"></div>
-                <form id="message-form" onsubmit="handleSendMessage(event)">
-                    <input type="text" id="chat-input" placeholder="Say something..." required>
-                    <button type="submit">Send</button>
-                </form>
+                <div id="online-users" style="padding: 10px;"></div>
+                <div id="user-search" style="padding: 10px;">
+                    <input type="text" id="search-input" placeholder="Search users..." oninput="searchUsers()">
+                    <div id="user-list"></div>
+                </div>
+                <div id="chat-container">
+                    <div id="public-chat">
+                        <h2>Public Chat</h2>
+                        <div id="messages"></div>
+                        <form id="message-form" onsubmit="handleSendMessage(event)">
+                            <input type="text" id="chat-input" placeholder="Say something..." required>
+                            <button type="submit">Send</button>
+                        </form>
+                    </div>
+                    <div id="dm-chat" class="hidden">
+                        <h2>DM with <span id="dm-recipient"></span></h2>
+                        <div id="dm-messages"></div>
+                        <form id="dm-form" onsubmit="handleSendDM(event)">
+                            <input type="text" id="dm-input" placeholder="Send a DM..." required>
+                            <button type="submit">Send</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </section>
     </main>

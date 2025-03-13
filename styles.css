@@ -209,4 +209,28 @@ header h1 {
     .chat-wrapper {
         height: 90vh;
     }
+
+
+    .hidden { display: none; }
+
+    .message { padding: 8px; margin: 4px 0; border-radius: 4px; background: #f0f0f0; }
+
+    .user { font-weight: bold; cursor: pointer; }
+
+    .time { color: #666; font-size: 0.9em; }
+
+    #user-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
+
+    .user-item { padding: 5px; display: flex; align-items: center; }
+
+    .status-circle { width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+
+    .online { background: green; }
+
+    .offline { background: gray; }
+
+    #chat-container { display: flex; gap: 20px; }
+
+    #public-chat, #dm-chat { flex: 1; }
+
 }
