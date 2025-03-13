@@ -3,10 +3,10 @@ const firebaseConfig = {
     apiKey: "AIzaSyCCKPEreMGbgpP1lmA9uDFADzuNC_0C9gk",
     authDomain: "nickproject.firebaseapp.com",
     databaseURL: "https://nickproject-66789-default-rtdb.europe-west1.firebasedatabase.app/",
-    projectId: "chatspherefirebase",
-    storageBucket: "chatspherefirebase.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef123456"
+    projectId: "nickproject-66789",
+    storageBucket: "nickproject.appspot.com",
+    messagingSenderId: "178516922595 ",
+    appId: "1:178516922595:web:4ca9977e5809c31d0d35d6"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -20,13 +20,14 @@ document.addEventListener("DOMContentLoaded", function() {
     const messagesDiv = document.getElementById("messages");
     const dmMessagesDiv = document.getElementById("dm-messages");
     const status = document.getElementById("status");
-    const dmRecipientSpan = document.getElementById("dm-recipient");
 
+    // Utility to show status messages
     function showStatus(message, success = false) {
         status.textContent = message;
         status.style.color = success ? "#00ff00" : "#ff4444";
     }
 
+    // Generate a color based on username
     function stringToColor(str) {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return "#" + "00000".substring(0, 6 - c.length) + c;
     }
 
+    // Append a message to the specified container
     function appendMessage(data, container) {
         const div = document.createElement("div");
         div.classList.add("message");
@@ -47,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
         container.scrollTop = container.scrollHeight;
     }
 
+    // Load public chat messages
     function loadMessages() {
         messagesDiv.innerHTML = "";
         db.ref("messages").orderByChild("timestamp").on("child_added", (snapshot) => {
@@ -56,9 +59,10 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Load DM messages for the selected user
     function loadDMs(recipient) {
         const uid = sessionStorage.getItem("uid");
-        const dmPath = `dms/${uid < recipient.uid ? uid : recipient.uid}/${uid < recipient.uid ? recipient.uid : uid}`;
+        const dmPath = `dms/${uid < recipient.uid ? uid + "_" + recipient.uid : recipient.uid + "_" + uid}`;
         dmMessagesDiv.innerHTML = "";
         db.ref(dmPath).orderByChild("timestamp").on("child_added", (snapshot) => {
             appendMessage(snapshot, dmMessagesDiv);
@@ -67,6 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Update user's online status
     function updateOnlineStatus(isOnline) {
         const uid = sessionStorage.getItem("uid");
         if (uid) {
@@ -74,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // Display online users
     function loadOnlineUsers() {
         const onlineDiv = document.getElementById("online-users");
         db.ref("online").on("value", (snapshot) => {
@@ -87,17 +93,18 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Search users and display results
     window.searchUsers = function() {
         const searchInput = document.getElementById("search-input").value.toLowerCase();
         const userList = document.getElementById("user-list");
+        userList.innerHTML = "";
         db.ref("users").once("value", (snapshot) => {
-            const users = snapshot.val();
+            const users = snapshot.val() || {};
             db.ref("online").once("value", (onlineSnapshot) => {
                 const online = onlineSnapshot.val() || {};
-                userList.innerHTML = "";
                 for (let uid in users) {
                     const username = users[uid].username;
-                    if (username.toLowerCase().includes(searchInput)) {
+                    if (username.toLowerCase().includes(searchInput) || searchInput === "") {
                         const isOnline = online[uid] === true;
                         const div = document.createElement("div");
                         div.classList.add("user-item");
@@ -113,23 +120,31 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     };
 
-    function startDM(recipient) {
-        if (recipient.uid === sessionStorage.getItem("uid")) return; // No self-DM
+    // Start a DM session
+    window.startDM = function(recipient) {
+        if (recipient.uid === sessionStorage.getItem("uid")) return; // Prevent DMing yourself
         currentDMRecipient = recipient;
-        dmRecipientSpan.textContent = recipient.username;
-        document.getElementById("dm-chat").classList.remove("hidden");
-        document.getElementById("public-chat").style.flex = "1";
-        if (db.ref("dms")) db.ref("dms").off(); // Clear previous DM listener
+        document.getElementById("dm-recipient").textContent = recipient.username;
+        document.getElementById("dm-modal").classList.remove("hidden");
         loadDMs(recipient);
-    }
+    };
 
+    // Close the DM modal
+    window.closeDM = function() {
+        document.getElementById("dm-modal").classList.add("hidden");
+        currentDMRecipient = null;
+        dmMessagesDiv.innerHTML = "";
+        db.ref("dms").off(); // Stop listening to DM updates
+    };
+
+    // Send a DM
     window.handleSendDM = async function(event) {
         event.preventDefault();
         if (!currentDMRecipient) return;
         const username = sessionStorage.getItem("chatSphereUser");
         const content = document.getElementById("dm-input").value.trim();
         const uid = sessionStorage.getItem("uid");
-        const dmPath = `dms/${uid < currentDMRecipient.uid ? uid : currentDMRecipient.uid}/${uid < currentDMRecipient.uid ? currentDMRecipient.uid : uid}`;
+        const dmPath = `dms/${uid < currentDMRecipient.uid ? uid + "_" + currentDMRecipient.uid : currentDMRecipient.uid + "_" + uid}`;
 
         if (!content || !username) {
             showStatus("Message or username missing.");
@@ -149,6 +164,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
+    // Register a new user
     window.handleRegister = async function() {
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
@@ -186,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
+    // Log in an existing user
     window.handleLogin = async function() {
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
@@ -193,10 +210,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (!username || !password) {
             showStatus("Username and password are required.");
-            return;
-        }
-        if (password.length < 6) {
-            showStatus("Password must be at least 6 characters.");
             return;
         }
 
@@ -210,11 +223,13 @@ document.addEventListener("DOMContentLoaded", function() {
             loadMessages();
             loadOnlineUsers();
             searchUsers();
+            showStatus("Logged in successfully!", true);
         } catch (error) {
             showStatus("Invalid username or password: " + error.message);
         }
     };
 
+    // Send a public message
     window.handleSendMessage = async function(event) {
         event.preventDefault();
         const username = sessionStorage.getItem("chatSphereUser");
@@ -238,6 +253,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
+    // Log out
     window.handleLogout = function() {
         updateOnlineStatus(false);
         auth.signOut().then(() => {
@@ -246,17 +262,18 @@ document.addEventListener("DOMContentLoaded", function() {
             authPanel.classList.remove("hidden");
             messagesDiv.innerHTML = "";
             dmMessagesDiv.innerHTML = "";
-            document.getElementById("dm-chat").classList.add("hidden");
+            document.getElementById("dm-modal").classList.add("hidden");
             showStatus("Logged out successfully.", true);
             db.ref("messages").off();
             db.ref("online").off();
-            if (currentDMRecipient) db.ref(`dms`).off();
+            if (currentDMRecipient) db.ref("dms").off();
             currentDMRecipient = null;
         }).catch(error => {
             showStatus("Error logging out: " + error.message);
         });
     };
 
+    // Check if user is already logged in
     if (sessionStorage.getItem("chatSphereUser") && auth.currentUser) {
         authPanel.classList.add("hidden");
         chatPanel.classList.remove("hidden");
