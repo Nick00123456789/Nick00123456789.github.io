@@ -1,13 +1,13 @@
 // Replace with your Firebase config from Project Settings
 const firebaseConfig = {
     apiKey: "AIzaSyCCKPEreMGbgpP1lmA9uDFADzuNC_0C9gk",
-    authDomain: "chatspherefirebase.firebaseapp.com",
-    databaseURL: "https://chatspherefirebase-default-rtdb.firebaseio.com",
+    authDomain: "nickproject.firebaseapp.com",
+    databaseURL: "https://nickproject-66789-default-rtdb.europe-west1.firebasedatabase.app/",
     projectId: "chatspherefirebase",
     storageBucket: "chatspherefirebase.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef123456"
+  };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
