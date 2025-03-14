@@ -43,7 +43,7 @@ function showStatus(message, success = false) {
 registerBtn.onclick = async () => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
-    const fakeEmail = `${username.toLowerCase()}@chatsphere.com`; // Fake email for Firebase Auth
+    const fakeEmail = `${username.toLowerCase()}@chatsphere.com`;
 
     if (!username || !password) {
         showStatus("Please enter a username and password.");
