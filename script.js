@@ -9,225 +9,187 @@ const firebaseConfig = {
     appId: "1:178516922595:web:4ca9977e5809c31d0d35d6"
 
 };
-firebase.initializeApp(firebaseConfig);
 
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
-const messaging = firebase.messaging();
-
-// DOM Elements
-const authContainer = document.getElementById("auth");
-const chatContainer = document.getElementById("chat");
-const registerBtn = document.getElementById("registerBtn");
-const loginBtn = document.getElementById("loginBtn");
-const authStatus = document.getElementById("authStatus");
-const searchBar = document.getElementById("searchBar");
-const searchResults = document.getElementById("searchResults");
-const messagesDiv = document.getElementById("messages");
-const messageForm = document.getElementById("messageForm");
-const messageInput = document.getElementById("messageInput");
-const dmWindow = document.getElementById("dmWindow");
-const dmRecipient = document.getElementById("dmRecipient");
-const dmMessages = document.getElementById("dmMessages");
-const dmForm = document.getElementById("dmForm");
-const dmInput = document.getElementById("dmInput");
-const closeDM = document.getElementById("closeDM");
 
 let currentDMRecipient = null;
 
-// Helper Functions
-function showAuthStatus(message, isError = true) {
+// DOM Elements
+const authPanel = document.getElementById("auth");
+const chatPanel = document.getElementById("chat");
+const registerBtn = document.getElementById("registerBtn");
+const loginBtn = document.getElementById("loginBtn");
+const messageForm = document.getElementById("messageForm");
+const dmForm = document.getElementById("dmForm");
+const searchBar = document.getElementById("searchBar");
+const searchResults = document.getElementById("searchResults");
+const messagesDiv = document.getElementById("messages");
+const dmMessagesDiv = document.getElementById("dmMessages");
+const dmWindow = document.getElementById("dmWindow");
+const dmRecipientSpan = document.getElementById("dmRecipient");
+const closeDMBtn = document.getElementById("closeDM");
+const authStatus = document.getElementById("authStatus");
+
+// Show status messages
+function showStatus(message, success = false) {
     authStatus.textContent = message;
-    authStatus.style.color = isError ? "red" : "#28a745";
+    authStatus.style.color = success ? "#0f0" : "#f00";
 }
 
-function showMessage(message, container, isSent = false) {
-    const p = document.createElement("p");
-    p.classList.add("message", isSent ? "sent" : "received");
-    p.textContent = message;
-    container.appendChild(p);
-    container.scrollTop = container.scrollHeight;
-}
-
-// Registration
-registerBtn.addEventListener("click", () => {
+// Register user
+registerBtn.onclick = async () => {
     const username = document.getElementById("username").value.trim();
-    const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
+    const fakeEmail = `${username.toLowerCase()}@chatsphere.com`; // Fake email for Firebase Auth
 
-    if (!username || !email || !password) {
-        showAuthStatus("Please fill in all fields.");
+    if (!username || !password) {
+        showStatus("Please enter a username and password.");
         return;
     }
 
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
-            db.ref("users/" + user.uid).set({
-                username: username,
-                email: email,
-                createdAt: Date.now()
-            });
-            showAuthStatus("Welcome aboard!", false);
-            authContainer.classList.add("hidden");
-            chatContainer.classList.remove("hidden");
-            setupPresence(user.uid);
-        })
-        .catch((error) => {
-            showAuthStatus(error.message);
-        });
-});
+    try {
+        const userCredential = await auth.createUserWithEmailAndPassword(fakeEmail, password);
+        const uid = userCredential.user.uid;
+        await db.ref("users/" + uid).set({ username });
+        sessionStorage.setItem("uid", uid);
+        sessionStorage.setItem("username", username);
+        authPanel.classList.add("hidden");
+        chatPanel.classList.remove("hidden");
+        loadMessages();
+        setupSearch();
+        showStatus("Registered successfully!", true);
+    } catch (error) {
+        showStatus("Error: " + error.message);
+    }
+};
 
-// Login
-loginBtn.addEventListener("click", () => {
-    const email = document.getElementById("email").value.trim();
+// Login user
+loginBtn.onclick = async () => {
+    const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
+    const fakeEmail = `${username.toLowerCase()}@chatsphere.com`;
 
-    if (!email || !password) {
-        showAuthStatus("Email and password required.");
+    if (!username || !password) {
+        showStatus("Please enter a username and password.");
         return;
     }
 
-    auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
-            showAuthStatus("Logged in successfully!", false);
-            authContainer.classList.add("hidden");
-            chatContainer.classList.remove("hidden");
-            setupPresence(user.uid);
-        })
-        .catch((error) => {
-            showAuthStatus(error.message);
-        });
-});
+    try {
+        const userCredential = await auth.signInWithEmailAndPassword(fakeEmail, password);
+        const uid = userCredential.user.uid;
+        sessionStorage.setItem("uid", uid);
+        sessionStorage.setItem("username", username);
+        authPanel.classList.add("hidden");
+        chatPanel.classList.remove("hidden");
+        loadMessages();
+        setupSearch();
+        showStatus("Logged in successfully!", true);
+    } catch (error) {
+        showStatus("Error: " + error.message);
+    }
+};
 
-// User Search with Debouncing
-let searchTimeout;
-searchBar.addEventListener("input", (e) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        const query = e.target.value.toLowerCase();
-        searchResults.innerHTML = "";
-        if (query.length > 0) {
-            const usersRef = db.ref("users");
-            usersRef.once("value", (snapshot) => {
-                snapshot.forEach((childSnapshot) => {
-                    const user = childSnapshot.val();
-                    const uid = childSnapshot.key;
-                    if (user.username.toLowerCase().includes(query) && uid !== auth.currentUser.uid) {
-                        const li = document.createElement("li");
-                        li.textContent = user.username;
-                        li.classList.add(checkOnlineStatus(uid) ? "online" : "offline");
-                        li.addEventListener("click", () => startDM({ ...user, uid }));
-                        searchResults.appendChild(li);
-                    }
-                });
-            });
-        }
-    }, 300); // Debounce delay
-});
-
-// Check Online Status
-function checkOnlineStatus(uid) {
-    let isOnline = false;
-    db.ref("presence/" + uid).once("value", (snap) => {
-        const data = snap.val();
-        isOnline = data && data.status === "online";
+// Load public messages
+function loadMessages() {
+    db.ref("messages").on("child_added", (snapshot) => {
+        const data = snapshot.val();
+        const div = document.createElement("div");
+        div.className = `message ${data.sender === sessionStorage.getItem("username") ? "sent" : "received"}`;
+        div.textContent = `${data.sender}: ${data.content}`;
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
-    return isOnline;
 }
 
-// Setup Presence
-function setupPresence(uid) {
-    const presenceRef = db.ref("presence/" + uid);
-    const connectedRef = db.ref(".info/connected");
+// Send public message
+messageForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const content = document.getElementById("messageInput").value.trim();
+    const username = sessionStorage.getItem("username");
 
-    connectedRef.on("value", (snap) => {
-        if (snap.val() === true) {
-            presenceRef.set({ status: "online", lastSeen: Date.now() });
-            presenceRef.onDisconnect().set({ status: "offline", lastSeen: Date.now() });
-        }
+    if (content) {
+        await db.ref("messages").push({
+            sender: username,
+            content,
+            timestamp: Date.now()
+        });
+        document.getElementById("messageInput").value = "";
+    }
+};
+
+// Setup user search
+function setupSearch() {
+    db.ref("users").on("value", (snapshot) => {
+        const users = snapshot.val();
+        searchBar.oninput = () => {
+            const query = searchBar.value.toLowerCase();
+            searchResults.innerHTML = "";
+            for (let uid in users) {
+                const username = users[uid].username;
+                if (username.toLowerCase().includes(query) && uid !== sessionStorage.getItem("uid")) {
+                    const li = document.createElement("li");
+                    li.textContent = username;
+                    li.onclick = () => startDM(uid, username);
+                    searchResults.appendChild(li);
+                }
+            }
+        };
     });
 }
 
 // Start DM
-function startDM(recipient) {
-    currentDMRecipient = recipient;
-    dmRecipient.textContent = recipient.username;
+function startDM(recipientUid, recipientUsername) {
+    currentDMRecipient = { uid: recipientUid, username: recipientUsername };
+    dmRecipientSpan.textContent = recipientUsername;
     dmWindow.classList.remove("hidden");
-    dmMessages.innerHTML = "";
-    loadDMs(recipient);
-}
-
-// Load DMs
-function loadDMs(recipient) {
-    const fromUid = auth.currentUser.uid;
-    const convoId = [fromUid, recipient.uid].sort().join("_");
-    const messagesRef = db.ref(`dms/${convoId}/messages`);
-    messagesRef.on("child_added", (snapshot) => {
-        const msg = snapshot.val();
-        const isSent = msg.sender === fromUid;
-        showMessage(`${isSent ? "You" : recipient.username}: ${msg.content}`, dmMessages, isSent);
+    dmMessagesDiv.innerHTML = "";
+    const conversationId = [sessionStorage.getItem("uid"), recipientUid].sort().join("_");
+    db.ref(`dms/${conversationId}`).on("child_added", (snapshot) => {
+        const data = snapshot.val();
+        const div = document.createElement("div");
+        div.className = `message ${data.sender === sessionStorage.getItem("username") ? "sent" : "received"}`;
+        div.textContent = `${data.sender}: ${data.content}`;
+        dmMessagesDiv.appendChild(div);
+        dmMessagesDiv.scrollTop = dmMessagesDiv.scrollHeight;
     });
 }
 
 // Send DM
-dmForm.addEventListener("submit", (e) => {
+dmForm.onsubmit = async (e) => {
     e.preventDefault();
-    const message = dmInput.value.trim();
-    if (message && currentDMRecipient) {
-        const fromUid = auth.currentUser.uid;
-        const convoId = [fromUid, currentDMRecipient.uid].sort().join("_");
-        const msgRef = db.ref(`dms/${convoId}/messages`).push();
-        msgRef.set({
-            sender: fromUid,
-            content: message,
+    const content = document.getElementById("dmInput").value.trim();
+    const username = sessionStorage.getItem("username");
+    const uid = sessionStorage.getItem("uid");
+
+    if (content && currentDMRecipient) {
+        const conversationId = [uid, currentDMRecipient.uid].sort().join("_");
+        await db.ref(`dms/${conversationId}`).push({
+            sender: username,
+            content,
             timestamp: Date.now()
         });
-        dmInput.value = "";
+        document.getElementById("dmInput").value = "";
     }
-});
+};
 
-// Close DM Window
-closeDM.addEventListener("click", () => {
+// Close DM
+closeDMBtn.onclick = () => {
     dmWindow.classList.add("hidden");
     currentDMRecipient = null;
-});
+};
 
-// Send Public Message
-messageForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const message = messageInput.value.trim();
-    if (message) {
-        const msgRef = db.ref("messages").push();
-        msgRef.set({
-            sender: auth.currentUser.uid,
-            content: message,
-            timestamp: Date.now()
-        });
-        messageInput.value = "";
+// Check login state
+auth.onAuthStateChanged((user) => {
+    if (user && sessionStorage.getItem("uid") === user.uid) {
+        authPanel.classList.add("hidden");
+        chatPanel.classList.remove("hidden");
+        loadMessages();
+        setupSearch();
+    } else {
+        authPanel.classList.remove("hidden");
+        chatPanel.classList.add("hidden");
     }
-});
-
-// Load Public Messages
-db.ref("messages").on("child_added", (snapshot) => {
-    const msg = snapshot.val();
-    db.ref("users/" + msg.sender).once("value", (snap) => {
-        const sender = snap.val().username;
-        showMessage(`${sender}: ${msg.content}`, messagesDiv, msg.sender === auth.currentUser.uid);
-    });
-});
-
-// Notifications Setup (Replace VAPID key)
-messaging.getToken({ vapidKey: "YOUR_VAPID_KEY" }).then((token) => {
-    if (auth.currentUser) {
-        db.ref("users/" + auth.currentUser.uid + "/fcmToken").set(token);
-    }
-}).catch((err) => console.error("FCM Token Error:", err));
-
-messaging.onMessage((payload) => {
-    const notification = new Notification(payload.notification.title, {
-        body: payload.notification.body,
-        icon: "/icon.png"
-    });
 });
