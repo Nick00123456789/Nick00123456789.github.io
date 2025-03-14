@@ -22,6 +22,7 @@ const authPanel = document.getElementById("auth");
 const chatPanel = document.getElementById("chat");
 const registerBtn = document.getElementById("registerBtn");
 const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
 const messageForm = document.getElementById("messageForm");
 const dmForm = document.getElementById("dmForm");
 const searchBar = document.getElementById("searchBar");
@@ -46,7 +47,7 @@ registerBtn.onclick = async () => {
     const fakeEmail = `${username.toLowerCase()}@chatsphere.com`;
 
     if (!username || !password) {
-        showStatus("Please enter a username and password.");
+        showStatus("Username and password required.");
         return;
     }
 
@@ -73,7 +74,7 @@ loginBtn.onclick = async () => {
     const fakeEmail = `${username.toLowerCase()}@chatsphere.com`;
 
     if (!username || !password) {
-        showStatus("Please enter a username and password.");
+        showStatus("Username and password required.");
         return;
     }
 
@@ -90,6 +91,21 @@ loginBtn.onclick = async () => {
     } catch (error) {
         showStatus("Error: " + error.message);
     }
+};
+
+// Logout user
+logoutBtn.onclick = () => {
+    auth.signOut().then(() => {
+        sessionStorage.clear();
+        authPanel.classList.remove("hidden");
+        chatPanel.classList.add("hidden");
+        messagesDiv.innerHTML = "";
+        dmMessagesDiv.innerHTML = "";
+        dmWindow.classList.add("hidden");
+        showStatus("Logged out.", true);
+    }).catch((error) => {
+        showStatus("Logout error: " + error.message);
+    });
 };
 
 // Load public messages
@@ -123,20 +139,25 @@ messageForm.onsubmit = async (e) => {
 // Setup user search
 function setupSearch() {
     db.ref("users").on("value", (snapshot) => {
-        const users = snapshot.val();
+        const users = snapshot.val() || {};
         searchBar.oninput = () => {
-            const query = searchBar.value.toLowerCase();
+            const query = searchBar.value.trim().toLowerCase();
             searchResults.innerHTML = "";
-            for (let uid in users) {
-                const username = users[uid].username;
-                if (username.toLowerCase().includes(query) && uid !== sessionStorage.getItem("uid")) {
-                    const li = document.createElement("li");
-                    li.textContent = username;
-                    li.onclick = () => startDM(uid, username);
-                    searchResults.appendChild(li);
+            if (query) {
+                for (let uid in users) {
+                    const username = users[uid].username;
+                    if (username.toLowerCase().includes(query) && uid !== sessionStorage.getItem("uid")) {
+                        const li = document.createElement("li");
+                        li.textContent = username;
+                        li.onclick = () => startDM(uid, username);
+                        searchResults.appendChild(li);
+                    }
                 }
             }
         };
+    }, (error) => {
+        console.error("Error loading users:", error);
+        showStatus("Failed to load users.");
     });
 }
 
@@ -179,6 +200,7 @@ dmForm.onsubmit = async (e) => {
 closeDMBtn.onclick = () => {
     dmWindow.classList.add("hidden");
     currentDMRecipient = null;
+    db.ref("dms").off();
 };
 
 // Check login state

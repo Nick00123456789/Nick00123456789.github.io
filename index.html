@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatSphere</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="./firebase-app.js"></script>
-    <script src="./firebase-auth.js"></script>
-    <script src="./firebase-database.js"></script>
+    <script src="/firebase-app.js"></script>
+    <script src="/firebase-auth.js"></script>
+    <script src="/firebase-database.js"></script>
 </head>
 <body>
     <!-- Login Screen -->
     <div id="auth" class="auth-container">
-        <h2>Welcome to ChatSphere</h2>
+        <h2>ChatSphere</h2>
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
         <button id="registerBtn">Register</button>
@@ -20,13 +20,14 @@
         <p id="authStatus"></p>
     </div>
 
-    <!-- Chat Interface (Hidden Until Login) -->
+    <!-- Chat Interface -->
     <div id="chat" class="chat-container hidden">
         <div class="sidebar">
             <input type="text" id="searchBar" placeholder="Search users...">
             <ul id="searchResults"></ul>
         </div>
         <div class="main-chat">
+            <button id="logoutBtn">Logout</button>
             <div id="messages"></div>
             <form id="messageForm">
                 <input type="text" id="messageInput" placeholder="Type a message..." required>
