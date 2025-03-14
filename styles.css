@@ -21,22 +21,22 @@ body {
     max-width: 400px;
     margin: 100px auto;
     padding: 25px;
-    background: #1c1c1c; /* Darker gray */
+    background: #1c1c1c; /* Dark gray */
     border-radius: 10px;
     text-align: center;
-    border: 1px solid #4b0082; /* Purple accent */
+    border: 1px solid #008080; /* Teal accent */
 }
 
 .auth-container h2 {
     margin-bottom: 20px;
-    color: #8a2be2; /* Bright purple */
+    color: #00ced1; /* Bright teal */
 }
 
 .auth-container input {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
-    border: 1px solid #4b0082;
+    border: 1px solid #008080;
     border-radius: 5px;
     background: #2a2a2a;
     color: #e0e0e0;
@@ -46,7 +46,7 @@ body {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
-    background: #4b0082; /* Purple */
+    background: #008080; /* Teal */
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -55,7 +55,7 @@ body {
 }
 
 .auth-container button:hover {
-    background: #6a00b3; /* Lighter purple */
+    background: #00a0a0; /* Lighter teal */
 }
 
 /* Chat Interface */
@@ -69,13 +69,13 @@ body {
     width: 250px;
     background: #1c1c1c;
     padding: 15px;
-    border-right: 1px solid #4b0082;
+    border-right: 1px solid #008080;
 }
 
 #searchBar {
     width: 100%;
     padding: 10px;
-    border: 1px solid #4b0082;
+    border: 1px solid #008080;
     border-radius: 5px;
     background: #2a2a2a;
     color: #e0e0e0;
@@ -84,7 +84,7 @@ body {
 #searchResults {
     list-style: none;
     margin-top: 10px;
-    max-height: 70vh;
+    max-height: 60vh;
     overflow-y: auto;
 }
 
@@ -95,7 +95,22 @@ body {
 }
 
 #searchResults li:hover {
-    background: #4b0082;
+    background: #008080;
+}
+
+#createGroupBtn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #008080;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#createGroupBtn:hover {
+    background: #00a0a0;
 }
 
 .main-chat {
@@ -110,7 +125,7 @@ body {
     align-self: flex-end;
     padding: 10px 20px;
     margin-bottom: 10px;
-    background: #4b0082;
+    background: #008080;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -118,16 +133,16 @@ body {
 }
 
 #logoutBtn:hover {
-    background: #6a00b3;
+    background: #00a0a0;
 }
 
-#messages, #dmMessages {
+#messages, #dmMessages, #groupMessages {
     flex: 1;
     overflow-y: auto;
     padding: 10px;
     background: #1c1c1c;
     border-radius: 5px;
-    border: 1px solid #4b0082;
+    border: 1px solid #008080;
 }
 
 .message {
@@ -139,7 +154,7 @@ body {
 }
 
 .sent {
-    background: #4b0082;
+    background: #008080;
     align-self: flex-end;
 }
 
@@ -148,15 +163,15 @@ body {
     align-self: flex-start;
 }
 
-#messageForm, #dmForm {
+#messageForm, #dmForm, #groupForm {
     display: flex;
     margin-top: 10px;
 }
 
-#messageInput, #dmInput {
+#messageInput, #dmInput, #groupInput {
     flex: 1;
     padding: 10px;
-    border: 1px solid #4b0082;
+    border: 1px solid #008080;
     border-radius: 5px;
     background: #2a2a2a;
     color: #e0e0e0;
@@ -165,7 +180,7 @@ body {
 button {
     padding: 10px 15px;
     margin-left: 10px;
-    background: #4b0082;
+    background: #008080;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -173,11 +188,11 @@ button {
 }
 
 button:hover {
-    background: #6a00b3;
+    background: #00a0a0;
 }
 
-/* DM Window */
-.dm-window {
+/* DM and Group Windows */
+.dm-window, .group-window {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -185,10 +200,10 @@ button:hover {
     background: #1c1c1c;
     border-radius: 10px;
     padding: 15px;
-    border: 1px solid #4b0082;
+    border: 1px solid #008080;
 }
 
-.dm-window h3 {
+.dm-window h3, .group-window h3 {
     margin-bottom: 10px;
-    color: #8a2be2;
+    color: #00ced1;
 }

@@ -16,6 +16,7 @@ const auth = firebase.auth();
 const db = firebase.database();
 
 let currentDMRecipient = null;
+let currentGroup = null;
 
 // DOM Elements
 const authPanel = document.getElementById("auth");
@@ -25,13 +26,19 @@ const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const messageForm = document.getElementById("messageForm");
 const dmForm = document.getElementById("dmForm");
+const groupForm = document.getElementById("groupForm");
 const searchBar = document.getElementById("searchBar");
 const searchResults = document.getElementById("searchResults");
+const createGroupBtn = document.getElementById("createGroupBtn");
 const messagesDiv = document.getElementById("messages");
 const dmMessagesDiv = document.getElementById("dmMessages");
+const groupMessagesDiv = document.getElementById("groupMessages");
 const dmWindow = document.getElementById("dmWindow");
+const groupWindow = document.getElementById("groupWindow");
 const dmRecipientSpan = document.getElementById("dmRecipient");
+const groupNameSpan = document.getElementById("groupName");
 const closeDMBtn = document.getElementById("closeDM");
+const closeGroupBtn = document.getElementById("closeGroup");
 const authStatus = document.getElementById("authStatus");
 
 // Show status messages
@@ -101,7 +108,9 @@ logoutBtn.onclick = () => {
         chatPanel.classList.add("hidden");
         messagesDiv.innerHTML = "";
         dmMessagesDiv.innerHTML = "";
+        groupMessagesDiv.innerHTML = "";
         dmWindow.classList.add("hidden");
+        groupWindow.classList.add("hidden");
         showStatus("Logged out.", true);
     }).catch((error) => {
         showStatus("Logout error: " + error.message);
@@ -156,7 +165,7 @@ function setupSearch() {
             }
         };
     }, (error) => {
-        console.error("Error loading users:", error);
+        console.error("Search error:", error);
         showStatus("Failed to load users.");
     });
 }
@@ -166,6 +175,7 @@ function startDM(recipientUid, recipientUsername) {
     currentDMRecipient = { uid: recipientUid, username: recipientUsername };
     dmRecipientSpan.textContent = recipientUsername;
     dmWindow.classList.remove("hidden");
+    groupWindow.classList.add("hidden"); // Ensure only one window is open
     dmMessagesDiv.innerHTML = "";
     const conversationId = [sessionStorage.getItem("uid"), recipientUid].sort().join("_");
     db.ref(`dms/${conversationId}`).on("child_added", (snapshot) => {
@@ -201,6 +211,64 @@ closeDMBtn.onclick = () => {
     dmWindow.classList.add("hidden");
     currentDMRecipient = null;
     db.ref("dms").off();
+};
+
+// Create group chat
+createGroupBtn.onclick = () => {
+    const groupName = prompt("Enter group name:");
+    if (groupName) {
+        const uid = sessionStorage.getItem("uid");
+        const groupId = db.ref("groups").push().key;
+        const groupData = {
+            name: groupName,
+            members: { [uid]: true }
+        };
+        db.ref(`groups/${groupId}`).set(groupData).then(() => {
+            startGroup(groupId, groupName);
+        }).catch((error) => {
+            showStatus("Error creating group: " + error.message);
+        });
+    }
+};
+
+// Start group chat
+function startGroup(groupId, groupName) {
+    currentGroup = { id: groupId, name: groupName };
+    groupNameSpan.textContent = groupName;
+    groupWindow.classList.remove("hidden");
+    dmWindow.classList.add("hidden"); // Ensure only one window is open
+    groupMessagesDiv.innerHTML = "";
+    db.ref(`groups/${groupId}/messages`).on("child_added", (snapshot) => {
+        const data = snapshot.val();
+        const div = document.createElement("div");
+        div.className = `message ${data.sender === sessionStorage.getItem("username") ? "sent" : "received"}`;
+        div.textContent = `${data.sender}: ${data.content}`;
+        groupMessagesDiv.appendChild(div);
+        groupMessagesDiv.scrollTop = groupMessagesDiv.scrollHeight;
+    });
+}
+
+// Send group message
+groupForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const content = document.getElementById("groupInput").value.trim();
+    const username = sessionStorage.getItem("username");
+
+    if (content && currentGroup) {
+        await db.ref(`groups/${currentGroup.id}/messages`).push({
+            sender: username,
+            content,
+            timestamp: Date.now()
+        });
+        document.getElementById("groupInput").value = "";
+    }
+};
+
+// Close group chat
+closeGroupBtn.onclick = () => {
+    groupWindow.classList.add("hidden");
+    currentGroup = null;
+    db.ref("groups").off();
 };
 
 // Check login state
