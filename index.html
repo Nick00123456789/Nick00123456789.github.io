@@ -10,61 +10,41 @@
     <script src="./firebase-database.js"></script>
 </head>
 <body>
-    <main>
-        <section id="auth" class="panel">
-            <div class="auth-wrapper">
-                <h1>Welcome</h1>
-                <div class="input-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" placeholder="Enter username" required>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter password" required>
-                </div>
-                <div class="auth-actions">
-                    <button id="register-btn" onclick="handleRegister()">Register</button>
-                    <button id="login-btn" onclick="handleLogin()">Login</button>
-                </div>
-                <p id="status"></p>
-            </div>
-        </section>
+    <!-- Authentication Section -->
+    <div id="auth" class="auth-container">
+        <h2>Welcome to ChatSphere</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button id="registerBtn">Register</button>
+        <button id="loginBtn">Login</button>
+        <p id="authStatus"></p>
+    </div>
 
-        <section id="chat" class="panel hidden">
-            <div class="chat-wrapper">
-                <header>
-                    <h1>Chat Sphere</h1>
-                    <div class="chat-controls">
-                        <button class="exit" onclick="handleLogout()">Logout</button>
-                    </div>
-                </header>
-                <div class="chat-layout">
-                    <div id="user-search">
-                        <h2>Users</h2>
-                        <input type="text" id="search-input" placeholder="Search users..." oninput="searchUsers()">
-                        <div id="user-list"></div>
-                    </div>
-                    <div id="chat-area">
-                        <div id="public-chat" class="chat-section">
-                            <h2>Public Chat</h2>
-                            <div id="messages"></div>
-                            <form id="message-form" onsubmit="handleSendMessage(event)">
-                                <input type="text" id="chat-input" placeholder="Say something..." required>
-                                <button type="submit">Send</button>
-                            </form>
-                        </div>
-                        <div id="dm-chat" class="chat-section hidden">
-                            <h2>DM with <span id="dm-recipient"></span></h2>
-                            <button onclick="closeDM()">Back to Public Chat</button>
-                            <div id="dm-messages"></div>
-                            <form id="dm-form" onsubmit="handleSendDM(event)">
-                                <input type="text" id="dm-input" placeholder="Send a DM..." required>
-                                <button type="submit" id="dm-send-btn">Send</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-    <script src="./script.js"></script>
+    <!-- Chat Interface -->
+    <div id="chat" class="chat-container hidden">
+        <div class="sidebar">
+            <input type="text" id="searchBar" placeholder="Search users...">
+            <ul id="searchResults"></ul>
+        </div>
+        <div class="main-chat">
+            <div id="messages"></div>
+            <form id="messageForm">
+                <input type="text" id="messageInput" placeholder="Type a message..." required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+        <div id="dmWindow" class="dm-window hidden">
+            <h3>DM with <span id="dmRecipient"></span></h3>
+            <div id="dmMessages"></div>
+            <form id="dmForm">
+                <input type="text" id="dmInput" placeholder="Type a DM..." required>
+                <button type="submit">Send</button>
+            </form>
+            <button id="closeDM">Close</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
