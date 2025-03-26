@@ -1,0 +1,11 @@
+{2769003e-96f5-42a8-a999-ec0ce07f1c88} event:/sol/thunder/near
+{a7e11f86-8284-4197-838e-b200de2bb178} event:/sol/thunder/mid
+{b37fe70d-8f75-442c-b153-346e24bd634c} event:/sol/thunder/distant
+{4ed86ded-12f6-4351-8537-0aaf8348260f} event:/sol/wind
+{cce02b5c-1d54-4f16-8847-1dbaec938d9f} event:/rain/exterior
+{091b0a99-afb1-40fe-8852-85f019ac378b} event:/rain/interior
+{d3226b96-2c62-4853-8dce-f67496bd0ac2} event:/wiper/std
+{08f6ba78-f576-4f9f-a232-47657d5fec19} bus:/
+{b8e14e1b-a0be-44c6-927b-d8a91186b96d} bank:/sol
+{e61ebeb4-8329-469e-9f83-013eeb390801} bank:/rain
+{0175dcbb-30cc-4f74-b7a5-f72df802cdd6} bank:/wiper
